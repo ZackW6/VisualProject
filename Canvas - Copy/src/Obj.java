@@ -1,6 +1,8 @@
 import java.awt.*;
+import java.awt.Rectangle;
 
 public class Obj{
+    protected Shape shape;
     protected String type;
     protected int xcoord;
     protected int ycoord;
@@ -90,5 +92,8 @@ public class Obj{
     }
     public void setColor(Color col){
         this.col=col;
+    }
+    public Shape defineShape(){
+        return new Rectangle();
     }
 }

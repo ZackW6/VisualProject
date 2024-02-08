@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.awt.Polygon;
 
 class Polygoni extends Obj{
     protected int[] xcoords;
@@ -54,5 +55,9 @@ class Polygoni extends Obj{
         ycoords[2]=length;
         xcoords[3]=0;
         ycoords[3]=length;
+    }
+    @Override
+    public Shape defineShape(){
+        return new Polygon(xcoords,ycoords,xcoords.length);
     }
 }

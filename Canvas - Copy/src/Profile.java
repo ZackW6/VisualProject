@@ -5,11 +5,11 @@ public class Profile {
     private static long total;
     public static void timeStart(){
         runs++;
-        startTime = System.nanoTime();
+        startTime = System.currentTimeMillis();
     }
     public static void timeEnd(){
         
-        elapsedTime = System.nanoTime()-startTime;
+        elapsedTime = System.currentTimeMillis()-startTime;
         total+=elapsedTime;
     }
     public static double getAverage(){

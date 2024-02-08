@@ -24,7 +24,7 @@ abstract class VisualJ extends JFrame {
         g2dBuffer.setColor(getBackground());
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
         
-
+        
         
         for (int i = 0; i < shapes.length; i++) {
             if (shapes[i]!=null){
@@ -81,9 +81,8 @@ abstract class VisualJ extends JFrame {
                         g2dBuffer.translate(rotX,yp+shapes[i].length/2);
                         g2dBuffer.rotate(radians);
                         
-
+                        g2dBuffer.setFont((Font) stuff[1]);
                         g2dBuffer.drawString(stuff[0].toString(),0,0);
-                        
                         
                         g2dBuffer.rotate(-radians);
                         g2dBuffer.translate(-rotX,-yp-shapes[i].length/2);
