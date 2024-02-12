@@ -35,22 +35,7 @@ public class Obj{
     }
 
 
-    public void remove(){
-        for (int i=0;i<VisualJ.shapes.length;i++){
-        if (VisualJ.shapes[i].equals(this)){
-          VisualJ.shapes[i]=null;
-          i=VisualJ.shapes.length;
-        }
-      }
-    }
-    public void add(){
-      for (int i=0;i<VisualJ.shapes.length;i++){
-        if (VisualJ.shapes[i]==null){
-          VisualJ.shapes[i]=this;
-          i=VisualJ.shapes.length;
-        }
-      }
-    }
+    
 
 
     public int getIndex(Obj[] x){

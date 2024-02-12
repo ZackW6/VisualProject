@@ -2,14 +2,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-abstract class VisualJ extends JFrame {
-    public static Obj[] shapes=new Obj[100];
+abstract class VisualJ extends JFrame{
+    public Obj[] shapes=new Obj[100];
     //shapes encompasses everything that will be included in the graphics project
     int WIDTH = 20000;
     int HEIGHT = 10000;
 
     private BufferedImage buffer;
-
 
 
     @Override
@@ -23,9 +22,6 @@ abstract class VisualJ extends JFrame {
         Graphics2D g2dBuffer = buffer.createGraphics();
         g2dBuffer.setColor(getBackground());
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
-        
-        
-        
         for (int i = 0; i < shapes.length; i++) {
             if (shapes[i]!=null){
                 int xp=shapes[i].xcoord+shapes[i].xxcoord;
@@ -60,7 +56,6 @@ abstract class VisualJ extends JFrame {
                     g2dBuffer.fillPolygon(b,c,arrintx.length);
                     z=ArrMath.minusArrs(arrintx,z);
                     a=ArrMath.minusArrs(arrinty,a);
-
                 }else if(shapes[i].type.equals("Circle")){
                         g2dBuffer.fillOval(xtra,ytra, shapes[i].width, shapes[i].length);
                     }else if(shapes[i].type.equals("Oval")){
@@ -123,9 +118,9 @@ abstract class VisualJ extends JFrame {
             }
         });
     }*/
-    public static void run() {
-        SwingUtilities.invokeLater(() -> new App().setVisible(true));
-    }
+    /*public static void innit() {
+        SwingUtilities.invokeLater(() -> new VisualJava().setVisible(true));
+    }*/
 
     
     public void createWorld(String title,int width, int height,Color color){
@@ -135,7 +130,7 @@ abstract class VisualJ extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
     }
-    public static void setArrSize(int x){
+    public void setArrSize(int x){
         Obj[] arr=new Obj[x];
         int max;
         if (shapes.length<x){
@@ -148,8 +143,32 @@ abstract class VisualJ extends JFrame {
         }
         shapes=arr;
     }
-    public static Obj[] getObjArray(){
+    public Obj[] getObjArray(){
         return shapes;
     }
-    
+
+    public void remove(Obj object){
+        for (int i=0;i<shapes.length;i++){
+        if (shapes[i].equals(object)){
+          shapes[i]=null;
+          i=shapes.length;
+        }
+      }
+    }
+    public void add(Obj object){
+      for (int i=0;i<shapes.length;i++){
+        if (shapes[i]==null){
+          shapes[i]=object;
+          i=shapes.length;
+        }
+      }
+    }
+    public void startGraphics() {
+        Thread animationThread = new Thread(() -> {
+            while (true) {
+                repaint(); // Request a repaint of the component
+            }
+        });
+        animationThread.start(); // Start the animation thread
+    }
 }
