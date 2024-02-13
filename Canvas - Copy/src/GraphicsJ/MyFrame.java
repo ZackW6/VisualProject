@@ -1,3 +1,4 @@
+package GraphicsJ;
 
 import javax.swing.*;
 
