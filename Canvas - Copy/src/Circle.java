@@ -10,4 +10,12 @@ class Circle extends Obj{
         this.width=newSize;
         this.length=newSize;
     }
+    @Override
+    public void show(Graphics2D g2dBuffer){
+        if (fill){
+            g2dBuffer.fillOval(-width/2, -length/2, width, width);
+        }else{
+            g2dBuffer.drawOval(-width/2, -length/2, width, width);
+        }
+    }
 }

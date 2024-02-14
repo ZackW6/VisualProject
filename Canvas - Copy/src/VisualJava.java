@@ -126,7 +126,7 @@ public class VisualJava extends VisualJ {
     int addin=0;
     public VisualJava(){
         SwingUtilities.invokeLater(() -> setVisible(true));
-        setArrSize(10000);
+        setArrSize(10001);
         Timer timer = new Timer(1, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -143,7 +143,7 @@ public class VisualJava extends VisualJ {
 
         // Stop the timer
         createWorld("Simulation", WIDTH, HEIGHT, Color.black);
-        for (int i=0;i<shapes.length;i++){
+        for (int i=0;i<shapes.length-1;i++){
             int rand1=Random.randInt(0, WIDTH);
             int radn2=Random.randInt(0,HEIGHT);
             int dist=(int)((Math.sqrt((Math.pow(WIDTH/2-rand1,2))+(Math.pow(HEIGHT/2-radn2,2))))/50);
@@ -154,6 +154,9 @@ public class VisualJava extends VisualJ {
             //shapes[i]=new Text(rand1,radn2,1+dist*10,ColorEXT.getRandomColor(),"HI");//TEXT BROKEN
             //shapes[i].customRotationCenter(WIDTH/2,HEIGHT/2);
         }
+        // shapes[9999]=new Circle(100,100,100,ColorEXT.getRandomColor(),true);
+        // Text txt=new Text(100, 100, 200, Color.blue, 20.0+"");
+        // shapes[10000]=txt;
 
 
     }
@@ -161,8 +164,8 @@ public class VisualJava extends VisualJ {
         for (int i=0;i<shapes.length;i++){
             if (shapes[i]!=null){
                 int rand=Random.randInt(0, 5);
-                shapes[i].rotate(shapes[i].degrees2+1);
-                shapes[i].rotPoint(WIDTH/2,HEIGHT/2,shapes[i].degrees2+1);
+                shapes[i].rotate(shapes[i].degrees2+rand);
+                shapes[i].rotPoint(WIDTH/2,HEIGHT/2,shapes[i].degrees2+rand);
                
                 //shapes[i].setPosition(Random.randInt(0,WIDTH),Random.randInt(0,HEIGHT));
                 //shapes[i].setColor(ColorEXT.getColorBasedXY(shapes[i].xcoord, shapes[i].ycoord, WIDTH, HEIGHT));

@@ -81,4 +81,7 @@ public class Obj{
     public Shape defineShape(){
         return new Rectangle();
     }
+    public void show(Graphics2D g2dBuffer){
+
+    }
 }

@@ -10,4 +10,13 @@ class Oval extends Obj{
     public void changeLength(int newSize){
         this.length=newSize;
     }
+
+    @Override
+    public void show(Graphics2D g2dBuffer){
+        if (fill){
+            g2dBuffer.fillOval(-width/2, -length/2, width, length);
+        }else{
+            g2dBuffer.drawOval(-width/2, -length/2, width, length);
+        }
+    }
 }

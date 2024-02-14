@@ -3,7 +3,7 @@ public class App {
         VisualJava vis = new VisualJava();
         vis.startGraphics();
 
-        VisualJava vis2 = new VisualJava();
-        vis2.startGraphics();
+        // VisualJava vis2 = new VisualJava();
+        // vis2.startGraphics();
     }
 }

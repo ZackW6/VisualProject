@@ -60,4 +60,22 @@ class Polygoni extends Obj{
     public Shape defineShape(){
         return new Polygon(xcoords,ycoords,xcoords.length);
     }
+
+    @Override
+    public void show(Graphics2D g2dBuffer){
+        Object[] poly=objectInformation();
+        int[] arrintx=(int[])poly[0];
+        int[] arrinty=(int[])poly[1];
+        int[] z=new int[arrintx.length];
+        int[] a=new int[arrinty.length];
+        for (int y=0;y<arrintx.length;y++){
+            z[y]=-width/2;
+            a[y]=-length/2;
+        }
+        int[] b=ArrMath.addArrs(arrintx,z);
+        int[] c=ArrMath.addArrs(arrinty,a);
+        g2dBuffer.fillPolygon(b,c,arrintx.length);
+        z=ArrMath.minusArrs(arrintx,z);
+        a=ArrMath.minusArrs(arrinty,a);
+    }
 }
