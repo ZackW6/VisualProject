@@ -1,6 +1,6 @@
 package Neat_Network;
 
-public class ConnectionGene {
+public class ConnectionGene extends Gene{
     private NodeGene from;
     private NodeGene to;
 

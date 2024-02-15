@@ -23,7 +23,7 @@ public class RandomHashSet<T> {
         return null;
     }
 
-    private int size(){
+    public int size(){
         return data.size();
     }
 

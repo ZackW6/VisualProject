@@ -1,5 +1,7 @@
 package Neat_Network;
 
+
+
 public class Genome {
     
     private RandomHashSet<ConnectionGene> connections = new RandomHashSet<>();
