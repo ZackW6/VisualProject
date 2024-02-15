@@ -117,13 +117,13 @@ class VisualJ extends JFrame{
         HEIGHT=height;
         SwingUtilities.invokeLater(() -> setVisible(true));
         setArrSize(10001);
-        Timer timer = new Timer(1, new ActionListener() {
+        /*Timer timer = new Timer(1, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                runAll();
+               runAll();
             }
         });
-        timer.start();
+        timer.start();*/
 
 
         // Perform the operation you want to measure
@@ -153,19 +153,5 @@ class VisualJ extends JFrame{
         // shapes[10000]=txt;
 
 
-    }
-    private void runAll(){
-        for (int i=0;i<shapes.length;i++){
-            if (shapes[i]!=null){
-                int rand=Random.randInt(0, 5);
-                shapes[i].rotate(shapes[i].degrees2+rand);
-                shapes[i].rotPoint(WIDTH/2,HEIGHT/2,shapes[i].degrees2+rand);
-               
-                //shapes[i].setPosition(Random.randInt(0,WIDTH),Random.randInt(0,HEIGHT));
-                //shapes[i].setColor(ColorEXT.getColorBasedXY(shapes[i].xcoord, shapes[i].ycoord, WIDTH, HEIGHT));
-               
-            }
-        }
-        //repaint(0,0,WIDTH,HEIGHT);
     }
 }

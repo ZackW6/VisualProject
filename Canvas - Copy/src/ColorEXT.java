@@ -20,7 +20,7 @@ public class ColorEXT {
         int red = Random.randInt(0,256);
         int green = Random.randInt(0,256);
         int blue = Random.randInt(0,256);
-
+        
         
         Color randomColor = new Color(red, green, blue);
 
