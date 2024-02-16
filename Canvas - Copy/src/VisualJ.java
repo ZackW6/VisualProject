@@ -44,22 +44,7 @@ class VisualJ extends JFrame{
         g.drawImage(buffer, 0, 0, this);
         System.out.println(Profile.getTime());
         Profile.timeEnd();
-        
-        //System.out.println(Profile.getTime());
     }
-    /*public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new VisualJ().setVisible(true);
-            }
-        });
-    }*/
-    /*public static void innit() {
-        SwingUtilities.invokeLater(() -> new VisualJava().setVisible(true));
-    }*/
-
-    
     public void createWorld(String title,int width, int height,Color color){
         setTitle(title);
         setSize(width, height);
@@ -116,42 +101,11 @@ class VisualJ extends JFrame{
         WIDTH=width;
         HEIGHT=height;
         SwingUtilities.invokeLater(() -> setVisible(true));
-        setArrSize(10001);
-        /*Timer timer = new Timer(1, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-               runAll();
-            }
-        });
-        timer.start();*/
-
-
-        // Perform the operation you want to measure
-
-
-
-
-        // Stop the timer
+        setArrSize(10000);
         setTitle(title);
         setSize(width, height);
         setBackground(background);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        for (int i=0;i<shapes.length-1;i++){
-            int rand1=Random.randInt(0, WIDTH);
-            int radn2=Random.randInt(0,HEIGHT);
-            int dist=(int)((Math.sqrt((Math.pow(WIDTH/2-rand1,2))+(Math.pow(HEIGHT/2-radn2,2))))/50);
-            shapes[i]=new Square(rand1,radn2,1+dist,ColorEXT.getRandomColor(),true);
-            //shapes[i]=new Circle(rand1,radn2,1+dist,ColorEXT.getRandomColor(),true);
-            //shapes[i]=new Polygon(rand1,radn2,new int[]{0,2+dist,(int)(1+dist/2)},new int[]{0,0,3+dist},ColorEXT.getRandomColor(), false);
-            //shapes[i]=new Line(rand1,radn2,new int[]{0,2+dist},new int[]{0,3+dist},ColorEXT.getColorBasedXY(rand1,radn2,WIDTH,HEIGHT), 1+dist);
-            //shapes[i]=new Text(rand1,radn2,1+dist*10,ColorEXT.getRandomColor(),"HI");//TEXT BROKEN
-            //shapes[i].customRotationCenter(WIDTH/2,HEIGHT/2);
-        }
-        // shapes[9999]=new Circle(100,100,100,ColorEXT.getRandomColor(),true);
-        // Text txt=new Text(100, 100, 200, Color.blue, 20.0+"");
-        // shapes[10000]=txt;
-
-
     }
 }
