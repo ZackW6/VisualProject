@@ -85,7 +85,7 @@ class VisualJ extends JFrame{
         }
       }
     }
-    public void startGraphics() {
+    public void startThread() {
         Thread animationThread = new Thread(() -> {
             while (true) {
                 repaint(); // Request a repaint of the component
