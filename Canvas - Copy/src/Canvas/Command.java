@@ -1,3 +1,7 @@
+package Canvas;
+/**
+ * Command class is a timer/thread mix
+ */
 public class Command {
     /**
      * Simplified Thread, meant to run once per var time
@@ -8,6 +12,11 @@ public class Command {
     private boolean isThread=false;
     private double time;
     private Runnable runner;
+    /**
+     * Runnable you wish to run, time per iteration
+     * @param runner
+     * @param time
+     */
     public Command(Runnable runner, double time){
         this.time=time;
         this.runner=runner;
@@ -24,31 +33,36 @@ public class Command {
         });
     }
     /**
-     * start thread sequence
+     * Start thread sequence
      */
     public void start(){
         thread.start();
         isThread=true;
     }
     /**
-     * stop thread sequence
+     * Stop thread sequence
      */
     public void stop(){
         thread.interrupt();
         isThread=false;
     }
     /**
-     * reset time per iteration
+     * Reset time per iteration
      */
     public void setTime(double time){
         setCommand(runner,time);
     }
     /**
-     * reset runnable in command
+     * Reset runnable in command
      */
     public void setRunnable(Runnable runner){
         setCommand(runner,time);
     }
+    /**
+     * Reset the command as new with these parameters
+     * @param runner
+     * @param time
+     */
     public void setCommand(Runnable runner, double time){
         stop();
         this.runner=runner;
@@ -68,11 +82,11 @@ public class Command {
             start();
         }
     }
+    /**
+     * Whether or not the command is currently running
+     * @return
+     */
     public boolean isThreadRunning(){
         return isThread;
     }
-    public void inputMethod(Runnable method){
-        
-    }
-
 }

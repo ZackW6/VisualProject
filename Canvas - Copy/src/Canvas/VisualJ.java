@@ -1,14 +1,16 @@
+package Canvas;
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
-class VisualJ extends JFrame{
+public class VisualJ extends JFrame{
     public Obj[] shapes=new Obj[100];
     //shapes encompasses everything that will be included in the graphics project
-    int WIDTH = 20000;
-    int HEIGHT = 10000;
+    public int WIDTH = 20000;
+    public int HEIGHT = 10000;
 
     private BufferedImage buffer;
 
@@ -65,10 +67,17 @@ class VisualJ extends JFrame{
         }
         shapes=arr;
     }
+    /**
+     * Get the array of objects currently being presented
+     * @return
+     */
     public Obj[] getObjArray(){
         return shapes;
     }
-
+    /**
+     * Remove an object from the current array of objects
+     * @param object
+     */
     public void remove(Obj object){
         for (int i=0;i<shapes.length;i++){
         if (shapes[i].equals(object)){
@@ -77,6 +86,10 @@ class VisualJ extends JFrame{
         }
       }
     }
+    /**
+     * Add an object to the current array of objects
+     * @param object
+     */
     public void add(Obj object){
       for (int i=0;i<shapes.length;i++){
         if (shapes[i]==null){
@@ -85,6 +98,9 @@ class VisualJ extends JFrame{
         }
       }
     }
+    /**
+     * Start the graphics thread, which runs as fast as possible
+     */
     public void startThread() {
         Thread animationThread = new Thread(() -> {
             while (true) {
@@ -95,7 +111,12 @@ class VisualJ extends JFrame{
     }
 
 
-
+    public int getBackgroundHeight(){
+        return HEIGHT;
+    }
+    public int getBackgroundWidth(){
+        return WIDTH;
+    }
 
     public VisualJ(String title,int width, int height, Color background){
         WIDTH=width;
