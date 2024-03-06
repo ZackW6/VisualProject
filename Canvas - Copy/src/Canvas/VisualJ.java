@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 public class VisualJ extends JFrame{
@@ -15,6 +17,8 @@ public class VisualJ extends JFrame{
     private BufferedImage buffer;
 
 
+    private double timeStep;
+    private UserInput userInput;
     @Override
     public void paint(Graphics g) {
         Profile.timeStart();
@@ -45,6 +49,7 @@ public class VisualJ extends JFrame{
         g2dBuffer.drawString(time+"",100,100);
         g.drawImage(buffer, 0, 0, this);
         System.out.println(Profile.getTime());
+        timeStep+=Profile.getTime()/1000;
         Profile.timeEnd();
     }
     public void createWorld(String title,int width, int height,Color color){
@@ -126,7 +131,13 @@ public class VisualJ extends JFrame{
         setTitle(title);
         setSize(width, height);
         setBackground(background);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        userInput = new UserInput();
+        userInput.setupMouseInputs(this);
+    }
+
+    public double getTimeStep(){
+        return timeStep;
     }
 }

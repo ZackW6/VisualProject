@@ -1,17 +1,5 @@
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Timer;
-import java.util.TimerTask;
-import Canvas.Line;
-import Canvas.VisualJ;
-import Canvas.Obj;
-import Canvas.Polygoni;
-import Canvas.Command;
-import Canvas.Random;
-import Canvas.ColorEXT;
-
+import Canvas.*;
 public class App {
     public static final VisualJ vis = new VisualJ("Simulation",1700,900,Color.black);
 
@@ -27,6 +15,7 @@ public class App {
 
     }
     public static void runAll(VisualJ vis){
+        
         Obj[] shapes = vis.getObjArray();
         for (int i=0;i<shapes.length;i++){
             if (shapes[i]!=null){
@@ -36,13 +25,13 @@ public class App {
                 Polygoni sqr=(Polygoni)shapes[i];
                 sqr.changeFill(false);
                 shapes[i]=sqr;
-                UserInput.mouseClicked(vis);
-                //shapes[i].setPosition(Random.randInt(0,WIDTH),Random.randInt(0,HEIGHT));
-                //shapes[i].setColor(ColorEXT.getColorBasedXY(shapes[i].xcoord, shapes[i].ycoord, WIDTH, HEIGHT));
+                // UserInput.mouseClicked(vis);
+                // shapes[i].setPosition(Random.randInt(0,WIDTH),Random.randInt(0,HEIGHT));
+                // shapes[i].setColor(ColorEXT.getColorBasedXY(shapes[i].xcoord, shapes[i].ycoord, WIDTH, HEIGHT));
                
             }
         }
-        //repaint(0,0,WIDTH,HEIGHT);
+        // repaint(0,0,WIDTH,HEIGHT);
     }
     public static void defineShapes(VisualJ vis){
         Obj[] shapes=vis.getObjArray();
