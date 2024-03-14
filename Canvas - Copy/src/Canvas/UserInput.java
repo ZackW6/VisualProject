@@ -7,15 +7,27 @@ import java.util.Scanner;
 import javax.swing.SwingUtilities;
 
 public class UserInput {
-    private static double mouseX;
-    private static double mouseY;
+    private double[] mouseCoords = new double[2];
 
-    private static boolean mouseClicked;
+    private static boolean isMousePressed;
+    private double[] lastMouseClickedCoords = new double[2];
 
+    private double[] lastMousePressedCoords = new double[2];
+    private double whenLastMousePressed;
+
+    private double[] lastMouseReleasedCoords = new double[2];
+    private double whenLastMouseReleased;
+
+    private boolean mouseIsEntered = false;
     private double[] lastMouseExitedCoords = new double[2];
     private double whenLastMouseExited;
+
     private double[] lastMouseEnteredCoords = new double[2];
     private double whenLastMouseEntered;
+
+    private boolean isMouseDragging = false;
+    private double[] mouseDragCurrentCoords = new double[2];
+    private double whenLastMouseDrag;
 
     private VisualJ canvas;
     public static String getNextLine() {
@@ -80,7 +92,7 @@ public class UserInput {
             }
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
-                
+                // e.();
             }
             @Override
             public void mouseDragged(MouseEvent e){
@@ -93,19 +105,19 @@ public class UserInput {
             }
             @Override
             public void mouseMoved(MouseEvent e){
-                mouseX = e.getX();
-                mouseY = e.getY();
+                mouseCoords[0] = e.getX();
+                mouseCoords[1] = e.getY();
             }
         });
         this.canvas=canvas;
     }
 
-    public static double getMouseX() {
-        return mouseX;
+    public double getMouseX() {
+        return mouseCoords[0];
     }
 
-    public static double getMouseY() {
-        return mouseY;
+    public double getMouseY() {
+        return mouseCoords[1];
     }
 
     
