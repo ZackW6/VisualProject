@@ -1,5 +1,8 @@
 import java.awt.Color;
 import Canvas.*;
+import Canvas.MouseInputs;
+import Canvas.MouseInputs.MouseInput;
+import Canvas.MouseInputs.MouseSide;
 public class App {
     public static final VisualJ vis = new VisualJ("Simulation",1700,900,Color.black);
 
@@ -15,7 +18,6 @@ public class App {
 
     }
     public static void runAll(VisualJ vis){
-        
         Obj[] shapes = vis.getObjArray();
         for (int i=0;i<shapes.length;i++){
             if (shapes[i]!=null){
@@ -25,7 +27,17 @@ public class App {
                 Polygoni sqr=(Polygoni)shapes[i];
                 sqr.changeFill(false);
                 shapes[i]=sqr;
-                // UserInput.mouseClicked(vis);
+                MouseInputs userInput = new MouseInputs(vis);
+                Runnable addSquare = new Runnable() {
+                    @Override
+                    public void run() {
+                        // TODO Auto-generated method stub
+                        System.out.println("HERE");
+                        throw new UnsupportedOperationException("Unimplemented method 'run'");
+                    }
+
+                };
+                userInput.addEvent(addSquare, MouseInput.MOUSE_PRESSED, MouseSide.RIGHT);
                 // shapes[i].setPosition(Random.randInt(0,WIDTH),Random.randInt(0,HEIGHT));
                 // shapes[i].setColor(ColorEXT.getColorBasedXY(shapes[i].xcoord, shapes[i].ycoord, WIDTH, HEIGHT));
                

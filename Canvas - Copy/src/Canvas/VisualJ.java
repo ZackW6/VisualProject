@@ -133,8 +133,7 @@ public class VisualJ extends JFrame{
         setBackground(background);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        userInput = new UserInput();
-        userInput.setupMouseInputs(this);
+        
     }
 
     public double getTimeStep(){
