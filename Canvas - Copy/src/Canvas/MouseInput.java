@@ -3,10 +3,12 @@ package Canvas;
 import java.util.ArrayList;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
 
-public class MouseInputs{
+public class MouseInput{
 
     private VisualJ canvas;
 
@@ -14,7 +16,7 @@ public class MouseInputs{
     public double mouseWheel = 0;
     public boolean leftPressed = false;
     public boolean rightPressed = false;
-    public enum MouseInput {
+    public enum MouseInputs {
         MOUSE_PRESSED(0),
         MOUSE_RELEASED(1),
         MOUSE_CLICKED(2),
@@ -24,7 +26,7 @@ public class MouseInputs{
         MOUSE_DRAGGED(6),
         MOUSE_MOVED(7);
         private int val;
-        private MouseInput(int val) {
+        private MouseInputs(int val) {
             this.val = val;
         }
         protected int get(){
@@ -43,24 +45,29 @@ public class MouseInputs{
         }
     }
     @SuppressWarnings("unchecked")
-    private ArrayList<Runnable>[][] events = new ArrayList[200][100];
+    private ArrayList<Runnable>[][] events = new ArrayList[2][8];
     /**
      * Mouse side should be left for any that are not intended to moniter clicks
      * @param run
      * @param typeOfListener
      * @param rightOrLeft
      */
-    public void addEvent(Runnable run, MouseInput typeOfListener, MouseSide rightOrLeft){
+    public void addEvent(Runnable run, MouseInputs typeOfListener, MouseSide rightOrLeft){
         events[rightOrLeft.get()][typeOfListener.get()].add(run);
     }
-    public ArrayList<Runnable> getEventList(MouseInput typeOfListener, MouseSide rightOrLeft){
+    public ArrayList<Runnable> getEventList(MouseInputs typeOfListener, MouseSide rightOrLeft){
         return events[rightOrLeft.get()][typeOfListener.get()];
     }
-    public void removeEvent(Runnable run, MouseInput typeOfListener, MouseSide rightOrLeft){
+    public void removeEvent(Runnable run, MouseInputs typeOfListener, MouseSide rightOrLeft){
         events[rightOrLeft.get()][typeOfListener.get()].remove(run);
     }
-    public MouseInputs(VisualJ canvas){
+    public MouseInput(VisualJ canvas){
         this.canvas = canvas;
+        for (int i = 0; i<events.length;i++){
+            for (int y = 0; y<events[i].length;y++){
+                events[i][y] = new ArrayList<Runnable>();
+            }
+        }
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -124,6 +131,17 @@ public class MouseInputs{
                     run.run();
                 }
             }
+        });
+        canvas.addMouseWheelListener(new MouseInputAdapter() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e){
+                mouseWheel=e.getPreciseWheelRotation();
+                for (Runnable run : events[0][5].toArray(new Runnable[events[0][5].size()])){
+                    run.run();
+                }
+            }
+        });
+        canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e){
                 if (SwingUtilities.isLeftMouseButton(e)) {

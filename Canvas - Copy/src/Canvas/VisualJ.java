@@ -7,9 +7,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class VisualJ extends JFrame{
-    public Obj[] shapes=new Obj[100];
+    public ArrayList<Obj> shapes=new ArrayList<Obj>();
     //shapes encompasses everything that will be included in the graphics project
     public int WIDTH = 20000;
     public int HEIGHT = 10000;
@@ -30,17 +31,17 @@ public class VisualJ extends JFrame{
         Graphics2D g2dBuffer = buffer.createGraphics();
         g2dBuffer.setColor(getBackground());
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
-        for (int i = 0; i < shapes.length; i++) {
-            if (shapes[i]!=null){
-                int xp=shapes[i].xcoord+shapes[i].xxcoord;
-                int yp=shapes[i].ycoord+shapes[i].xycoord;
-                double radians=(Math.toRadians(shapes[i].degree));
-                int rotX=xp+shapes[i].width/2;
-                int rotY=yp+shapes[i].length/2;
-                g2dBuffer.setColor(shapes[i].col);
+        for (int i = 0; i < shapes.size(); i++) {
+            if (shapes.get(i)!=null){
+                int xp=shapes.get(i).xcoord+shapes.get(i).xxcoord;
+                int yp=shapes.get(i).ycoord+shapes.get(i).xycoord;
+                double radians=(Math.toRadians(shapes.get(i).degree));
+                int rotX=xp+shapes.get(i).width/2;
+                int rotY=yp+shapes.get(i).length/2;
+                g2dBuffer.setColor(shapes.get(i).col);
                 g2dBuffer.translate(rotX,rotY);
                 g2dBuffer.rotate(radians);
-                shapes[i].show(g2dBuffer);
+                shapes.get(i).show(g2dBuffer);
                 g2dBuffer.rotate(-radians);
                 g2dBuffer.translate(-rotX,-rotY);
             }
@@ -59,24 +60,11 @@ public class VisualJ extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
     }
-    public void setArrSize(int x){
-        Obj[] arr=new Obj[x];
-        int max;
-        if (shapes.length<x){
-            max=shapes.length;
-        }else{
-            max=x;
-        }
-        for (int i=0;i<max;i++){
-            arr[i]=shapes[i];
-        }
-        shapes=arr;
-    }
     /**
      * Get the array of objects currently being presented
      * @return
      */
-    public Obj[] getObjArray(){
+    public ArrayList<Obj> getObjArray(){
         return shapes;
     }
     /**
@@ -84,24 +72,14 @@ public class VisualJ extends JFrame{
      * @param object
      */
     public void remove(Obj object){
-        for (int i=0;i<shapes.length;i++){
-        if (shapes[i].equals(object)){
-          shapes[i]=null;
-          i=shapes.length;
-        }
-      }
+        shapes.remove(object);
     }
     /**
      * Add an object to the current array of objects
      * @param object
      */
     public void add(Obj object){
-      for (int i=0;i<shapes.length;i++){
-        if (shapes[i]==null){
-          shapes[i]=object;
-          i=shapes.length;
-        }
-      }
+        shapes.add(object);
     }
     /**
      * Start the graphics thread, which runs as fast as possible
@@ -125,15 +103,13 @@ public class VisualJ extends JFrame{
 
     public VisualJ(String title,int width, int height, Color background){
         WIDTH=width;
-        HEIGHT=height;
+        HEIGHT=height; 
         SwingUtilities.invokeLater(() -> setVisible(true));
-        setArrSize(10000);
         setTitle(title);
         setSize(width, height);
         setBackground(background);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
-        
     }
 
     public double getTimeStep(){

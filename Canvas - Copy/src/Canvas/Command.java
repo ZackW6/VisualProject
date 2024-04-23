@@ -2,7 +2,7 @@ package Canvas;
 /**
  * Command class is a timer/thread mix
  */
-public class Command {
+public class Command extends CommandBase{
     /**
      * Simplified Thread, meant to run once per var time
      * @param run Runnable to run
