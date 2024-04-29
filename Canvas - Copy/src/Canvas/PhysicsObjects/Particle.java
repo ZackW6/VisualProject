@@ -38,14 +38,14 @@ public class Particle extends Circle{
     }
 
     public void handleCircleCollision(double elasticity){
-        // for (int i = findLeastIndex(this.coords.x-width/2); i < findGreatestIndex(this.coords.x+width*1.5); i++){
-        for (int i = 0; i < particleList.size(); i++){
+        for (int i = findLeastIndex(this.coords.x-width); i < findGreatestIndex(this.coords.x+width*2); i++){
+        // for (int i = 0; i < particleList.size(); i++){
             Particle secondParticle = particleList.get(i);
-            double dist = Math.sqrt(Math.pow(secondParticle.coords.x-this.coords.x,2)+Math.pow(secondParticle.coords.y-this.coords.y,2));
+            double dist = Math.sqrt(Math.pow((secondParticle.coords.x+secondParticle.width/2)-(this.coords.x+this.width/2),2)+Math.pow((secondParticle.coords.y+secondParticle.width/2)-(this.coords.y+this.width/2),2));
             if (dist<=this.width/2+secondParticle.width/2 && !particleList.get(i).equals(this)){
                 Vector2D n = secondParticle.coords.subtract(this.coords);
                 double distance = n.magnitude();
-                double overlap = 0.5 * (distance - this.width - this.width);
+                double overlap = 0.5 * (distance - (this.width/2)-(secondParticle.width/2));// - this.width);
 
                 // Normalizing the vector
                 n = n.normalize(); // Make sure to normalize after computing overlap
@@ -73,7 +73,7 @@ public class Particle extends Circle{
                 // Positional correction to avoid sinking issues
                 if (overlap < 0) {
                     this.coords = this.coords.add(n.multiply(overlap * (secondParticle.mass / (this.mass + secondParticle.mass))));
-                    secondParticle.coords = secondParticle.coords.subtract(n.multiply(overlap * (this.mass / (secondParticle.mass + this.mass))));
+                    particleList.get(i).coords = secondParticle.coords.subtract(n.multiply(overlap * (this.mass / (secondParticle.mass + this.mass))));
                 }
                 if (overlap > 0) {
                     // Calculate the correction vector along the collision normal
@@ -81,10 +81,9 @@ public class Particle extends Circle{
             
                     // Move the circles away from each other along the normal
                     this.coords = this.coords.subtract(correction.multiply(secondParticle.mass / (this.mass + secondParticle.mass)));
-                    secondParticle.coords = secondParticle.coords.add(correction.multiply(this.mass / (this.mass + secondParticle.mass)));
+                    particleList.get(i).coords = secondParticle.coords.add(correction.multiply(this.mass / (this.mass + secondParticle.mass)));
                 }
             }
-            particleList.set(i,secondParticle);
         }
     }
 

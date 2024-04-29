@@ -55,10 +55,10 @@ public class App {
         Runnable run2 = ()->{
             int rand = Random.randInt(5,20);
             Color col = new Color(0,rand*10,255);
-            vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0],mouse.getMouseCoords()[1]-vis.getFrameMove()[1], 100, col, true, rand, new double[]{0.1,0.1}, new double[]{0,.05}));
+            vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0],mouse.getMouseCoords()[1]-vis.getFrameMove()[1], 10, col, true, rand, new double[]{1,1}, new double[]{0,.5}));
         };
         mouse.leftPressed().whileTrue(run2,20);
-        mouse.rightPressed().onTrue(()->vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0],mouse.getMouseCoords()[1]-vis.getFrameMove()[1], 200, new Color(175,0,175), true, 1000, new double[]{.5,.5}, new double[]{0,.05})));
+        mouse.rightPressed().onTrue(()->vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0],mouse.getMouseCoords()[1]-vis.getFrameMove()[1], 400, new Color(175,0,175), true, 1000, new double[]{.5,.5}, new double[]{0,.05})));
         command.start();
     }
     
@@ -70,7 +70,7 @@ public class App {
             if (shapes.get(i)!=null){
                 if (shapes.get(i).getClass().isAssignableFrom(Particle.class)){
                     ((Particle) shapes.get(i)).handleBorderCollision(0,vis.WIDTH,0,vis.HEIGHT,.7);
-                    ((Particle) shapes.get(i)).handleCircleCollision(.9);
+                    ((Particle) shapes.get(i)).handleCircleCollision(1);
                     ((Particle) shapes.get(i)).applyMovement();
                     // System.out.println(((Particle) shapes.get(i)).getIndex());
                     // ((Particle) shapes.get(i)).setColor(new Color(0,((Particle) shapes.get(i)).getIndex(),0));
