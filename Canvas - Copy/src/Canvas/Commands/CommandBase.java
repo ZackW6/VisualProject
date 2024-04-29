@@ -1,4 +1,4 @@
-package Canvas;
+package Canvas.Commands;
 
 public abstract class CommandBase {
     public abstract void start();
@@ -8,4 +8,8 @@ public abstract class CommandBase {
     public abstract void setRunnable(Runnable runner);
 
     public abstract boolean isThreadRunning();
+
+    public abstract Runnable getRunnable();
+
+    public abstract double getTimer();
 }

@@ -1,4 +1,4 @@
-package Canvas;
+package Canvas.Util;
 public class ArrMath {
     /**
      * add two arrays together
@@ -6,7 +6,7 @@ public class ArrMath {
      * @param y
      * @return
      */
-    static int[] addArrs(int[] x,int[] y){
+    public static int[] addArrs(int[] x,int[] y){
         int[] a=y;
         int[] z=x;
         for (int i=0;i<z.length;i++){
@@ -20,7 +20,7 @@ public class ArrMath {
      * @param y
      * @return
      */
-    static int[] minusArrs(int[] x,int[] y){
+    public static int[] minusArrs(int[] x,int[] y){
       int[] a=y;
       int[] z=x;
       for (int i=0;i<z.length;i++){

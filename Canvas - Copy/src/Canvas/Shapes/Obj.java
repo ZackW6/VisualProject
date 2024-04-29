@@ -1,13 +1,14 @@
-package Canvas;
+package Canvas.Shapes;
 import java.awt.*;
 import java.awt.Rectangle;
+
+import Canvas.PhysicsObjects.Vector2D;
 /**
  * Base class for all shapes of the library
  */
 public class Obj{
     protected String type;
-    protected int xcoord;
-    protected int ycoord;
+    protected Vector2D coords = new Vector2D(0, 0);
     protected int width;
     protected int length;
     protected Color col;
@@ -28,8 +29,8 @@ public class Obj{
      */
     protected Obj(String type,int xcoord,int ycoord,int width, int length,Color col,boolean fill){
         this.type=type;
-        this.xcoord=xcoord;
-        this.ycoord=ycoord;
+        this.coords.x=xcoord;
+        this.coords.y=ycoord;
         this.col=col;
         this.width=width;
         this.length=length;
@@ -50,9 +51,9 @@ public class Obj{
      * @param moveX
      * @param moveY
      */
-    public void move(int moveX,int moveY){
-        this.xcoord=moveX+xcoord;
-        this.ycoord=moveY+ycoord;
+    public void move(double moveX,double moveY){
+        this.coords.x=moveX+coords.x;
+        this.coords.y=moveY+coords.y;
     }
 
     public int getDegree(){
@@ -96,10 +97,10 @@ public class Obj{
      */
     public void rotPoint(int x, int y, int deg){
         degrees2=deg;
-        double radius=Math.sqrt(Math.pow(x-(xcoord+width/2),2)+Math.pow(y-(ycoord+length/2),2));
-        double curRad = Math.toDegrees(Math.atan2((ycoord+length/2) - y, (xcoord+width/2) - x));
-        xxcoord=(int)(x+radius*Math.cos(Math.toRadians(degrees2+curRad)))-xcoord-width/2;
-        xycoord=(int)(y+radius*Math.sin(Math.toRadians(degrees2+curRad)))-ycoord-length/2;
+        double radius=Math.sqrt(Math.pow(x-(coords.x+width/2),2)+Math.pow(y-(coords.y+length/2),2));
+        double curRad = Math.toDegrees(Math.atan2((coords.y+length/2) - y, (coords.x+width/2) - x));
+        xxcoord=(int)(x+radius*Math.cos(Math.toRadians(degrees2+curRad)))-(int)coords.x-width/2;
+        xycoord=(int)(y+radius*Math.sin(Math.toRadians(degrees2+curRad)))-(int)coords.x-length/2;
     }
     /**
      * Set the position of the shape
@@ -107,8 +108,8 @@ public class Obj{
      * @param y
      */
     public void setPosition(int x, int y){
-        this.xcoord=x;
-        this.ycoord=y;
+        this.coords.x=x;
+        this.coords.x=y;
     }
     /**
      * Set the current color of the shape

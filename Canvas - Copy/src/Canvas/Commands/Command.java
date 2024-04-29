@@ -1,4 +1,5 @@
-package Canvas;
+package Canvas.Commands;
+
 /**
  * Command class is a timer/thread mix
  */
@@ -88,5 +89,15 @@ public class Command extends CommandBase{
      */
     public boolean isThreadRunning(){
         return isThread;
+    }
+
+    @Override
+    public Runnable getRunnable() {
+        return runner;
+    }
+
+    @Override
+    public double getTimer() {
+        return time;
     }
 }

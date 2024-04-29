@@ -1,4 +1,4 @@
-package Canvas;
+package Canvas.Util;
 import java.awt.*;
 /**
  * Color extension class that allows for certain specific color getters

@@ -1,4 +1,4 @@
-package Canvas;
+package Canvas.Inputs;
 
 import java.util.ArrayList;
 import java.awt.event.MouseAdapter;
@@ -7,6 +7,9 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputAdapter;
+
+import Canvas.Commands.Trigger;
+import Canvas.Shapes.VisualJ;
 
 public class MouseInput{
 
@@ -144,7 +147,10 @@ public class MouseInput{
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e){
+                mouseCoords[0] = e.getX();
+                mouseCoords[1] = e.getY();
                 if (SwingUtilities.isLeftMouseButton(e)) {
+                    
                     for (Runnable run : events[0][6].toArray(new Runnable[events[0][6].size()])){
                         run.run();
                     }
@@ -176,7 +182,13 @@ public class MouseInput{
         return leftPressed;
     }
     public boolean isRightMousePressed(){
-        return leftPressed;
+        return rightPressed;
+    }
+    public Trigger leftPressed(){
+        return new Trigger(()->isLeftMousePressed());
+    }
+    public Trigger rightPressed(){
+        return new Trigger(()->isRightMousePressed());
     }
 }
 

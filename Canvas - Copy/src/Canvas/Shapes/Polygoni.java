@@ -1,8 +1,10 @@
-package Canvas;
+package Canvas.Shapes;
 import java.awt.*;
 import java.awt.Polygon;
 
-public class Polygoni extends Obj{
+import Canvas.Util.ArrMath;
+
+public abstract class Polygoni extends Obj{
     protected int[] xcoords;
     protected int[] ycoords;
     public Polygoni(String type,int X,int Y,int[] arrintx,int[] arrinty, Color Color,boolean tf){

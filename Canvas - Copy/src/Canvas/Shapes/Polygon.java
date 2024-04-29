@@ -1,4 +1,4 @@
-package Canvas;
+package Canvas.Shapes;
 import java.awt.*;
 
 public class Polygon extends Polygoni{

@@ -1,4 +1,4 @@
-package Canvas;
+package Canvas.Shapes;
 import java.awt.*;
 
 public class Text extends Obj{
@@ -46,9 +46,9 @@ public class Text extends Obj{
      */
     @Override
     public void show(Graphics2D g2dBuffer){
-        int xp=xcoord+xxcoord;
+        int xp=(int)coords.x+xxcoord;
         //System.out.println(shapes[i].xxcoord);
-        int yp=ycoord+xycoord;
+        int yp=(int)coords.y+xycoord;
         double radians=(Math.toRadians(degree));
         int rotX=xp+width/2;
         int rotY=yp+length/2;
