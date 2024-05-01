@@ -1,12 +1,13 @@
-package Canvas.PhysicsObjects;
+package Canvas.Shapes.PhysicsObjects;
 
 import java.awt.Color;
 import java.util.ArrayList;
 
 import Canvas.Shapes.Circle;
+import Canvas.Shapes.Square;
 
 public class Particle extends Circle{
-    private static ArrayList<Particle> particleList = new ArrayList<Particle>();
+    public static ArrayList<Particle> particleList = new ArrayList<Particle>();
     private double mass;
     private Vector2D velocity;
     private Vector2D acceleration;
@@ -36,19 +37,60 @@ public class Particle extends Circle{
             coords.y  = borderY2-this.width;
         }
     }
+    public void handleSquareCollision(int borderX1, int borderX2, int borderY1, int borderY2, double elasticity){
+        double dx = (coords.x+width/2) - (borderX1+borderX2)/2;
+        double dy = (coords.y+width/2) - (borderY1+borderY2)/2;
 
+        // Check for horizontal dominance
+        if (Math.abs(dx) > Math.abs(dy)) {
+            if (Math.abs(dx) < (borderX2-borderX1)/2) {
+                if (dx > 0){
+                    velocity.x = Math.abs(velocity.x)*elasticity;
+                    coords.x  = borderX2;
+                }else{
+                    velocity.x = Math.abs(velocity.x)*-elasticity;
+                    coords.x  = borderX1-this.width;
+                }
+            }
+        }
+        // Check for vertical dominance
+        else {
+            if (Math.abs(dy) < (borderY2-borderY1)/2) {
+                if (dy > 0){
+                    velocity.y = Math.abs(velocity.y)*elasticity;
+                    coords.y  = borderY2;
+                }else{
+                    velocity.y = Math.abs(velocity.y)*-elasticity;
+                    coords.y  = borderY1-this.width;
+                    
+                }
+            }
+        }
+    }
+    public void handleSquareCollision(Square square){
+        handleSquareCollision((int)square.getCoords().x, (int)square.getCoords().x+(int)square.getWidth(), (int)square.getCoords().y, (int)square.getCoords().y+(int)square.getWidth(), 1);
+    }
     public void handleCircleCollision(double elasticity){
         for (int i = findLeastIndex(this.coords.x-width); i < findGreatestIndex(this.coords.x+width*2); i++){
         // for (int i = 0; i < particleList.size(); i++){
             Particle secondParticle = particleList.get(i);
-            double dist = Math.sqrt(Math.pow((secondParticle.coords.x+secondParticle.width/2)-(this.coords.x+this.width/2),2)+Math.pow((secondParticle.coords.y+secondParticle.width/2)-(this.coords.y+this.width/2),2));
-            if (dist<=this.width/2+secondParticle.width/2 && !particleList.get(i).equals(this)){
-                Vector2D n = secondParticle.coords.subtract(this.coords);
+            double radius1 = this.width / 2;
+            double radius2 = secondParticle.width / 2;
+
+            // Center positions of each particle
+            Vector2D center1 = new Vector2D(this.coords.x + radius1, this.coords.y + radius1);
+            Vector2D center2 = new Vector2D(secondParticle.coords.x + radius2, secondParticle.coords.y + radius2);
+
+            // Distance calculation
+            double dist = center1.distanceTo(center2);
+
+            if (dist <= radius1 + radius2 && !this.equals(secondParticle)) {
+                Vector2D n = center2.subtract(center1);
                 double distance = n.magnitude();
-                double overlap = 0.5 * (distance - (this.width/2)-(secondParticle.width/2));// - this.width);
+                double overlap = 0.5 * (radius1 + radius2 - distance);
 
                 // Normalizing the vector
-                n = n.normalize(); // Make sure to normalize after computing overlap
+                n = n.normalize(); // Normalize before computing correction
 
                 Vector2D t = new Vector2D(-n.y, n.x); // Tangent
 
@@ -71,17 +113,65 @@ public class Particle extends Circle{
                 secondParticle.velocity = v2nPrimeVec.add(v2tPrimeVec).multiply(elasticity);
 
                 // Positional correction to avoid sinking issues
-                if (overlap < 0) {
-                    this.coords = this.coords.add(n.multiply(overlap * (secondParticle.mass / (this.mass + secondParticle.mass))));
-                    particleList.get(i).coords = secondParticle.coords.subtract(n.multiply(overlap * (this.mass / (secondParticle.mass + this.mass))));
-                }
                 if (overlap > 0) {
-                    // Calculate the correction vector along the collision normal
-                    Vector2D correction = n.normalize().multiply(overlap / distance);
-            
-                    // Move the circles away from each other along the normal
+                    Vector2D correction = n.multiply(overlap);
                     this.coords = this.coords.subtract(correction.multiply(secondParticle.mass / (this.mass + secondParticle.mass)));
-                    particleList.get(i).coords = secondParticle.coords.add(correction.multiply(this.mass / (this.mass + secondParticle.mass)));
+                    secondParticle.coords = secondParticle.coords.add(correction.multiply(this.mass / (this.mass + secondParticle.mass)));
+                }
+            }
+        }
+    }
+    /**
+     *  will be removed, only for presentation purposes
+     * @param elasticity
+     */
+    public void handleCircleCollisionOld(double elasticity){
+        // for (int i = findLeastIndex(this.coords.x-width); i < findGreatestIndex(this.coords.x+width*2); i++){
+        for (int i = 0; i < particleList.size(); i++){
+            Particle secondParticle = particleList.get(i);
+            double radius1 = this.width / 2;
+            double radius2 = secondParticle.width / 2;
+
+            // Center positions of each particle
+            Vector2D center1 = new Vector2D(this.coords.x + radius1, this.coords.y + radius1);
+            Vector2D center2 = new Vector2D(secondParticle.coords.x + radius2, secondParticle.coords.y + radius2);
+
+            // Distance calculation
+            double dist = center1.distanceTo(center2);
+
+            if (dist <= radius1 + radius2 && !this.equals(secondParticle)) {
+                Vector2D n = center2.subtract(center1);
+                double distance = n.magnitude();
+                double overlap = 0.5 * (radius1 + radius2 - distance);
+
+                // Normalizing the vector
+                n = n.normalize(); // Normalize before computing correction
+
+                Vector2D t = new Vector2D(-n.y, n.x); // Tangent
+
+                double v1n = this.velocity.dot(n);
+                double v2n = secondParticle.velocity.dot(n);
+                double v1t = this.velocity.dot(t);
+                double v2t = secondParticle.velocity.dot(t);
+
+                // Calculate new normal velocities after collision
+                double v1nPrime = (v1n * (this.mass - secondParticle.mass) + 2 * secondParticle.mass * v2n) / (this.mass + secondParticle.mass);
+                double v2nPrime = (v2n * (secondParticle.mass - this.mass) + 2 * this.mass * v1n) / (this.mass + secondParticle.mass);
+
+                Vector2D v1nPrimeVec = n.multiply(v1nPrime);
+                Vector2D v2nPrimeVec = n.multiply(v2nPrime);
+                Vector2D v1tPrimeVec = t.multiply(v1t);
+                Vector2D v2tPrimeVec = t.multiply(v2t);
+
+                // Update velocities
+                this.velocity = v1nPrimeVec.add(v1tPrimeVec).multiply(elasticity);
+                secondParticle.velocity = v2nPrimeVec.add(v2tPrimeVec).multiply(elasticity);
+
+                // Positional correction to avoid sinking issues
+                if (overlap > 0) {
+                    Vector2D correction = n.multiply(overlap);
+                    this.coords = this.coords.subtract(correction.multiply(secondParticle.mass / (this.mass + secondParticle.mass)));
+                    secondParticle.coords = secondParticle.coords.add(correction.multiply(this.mass / (this.mass + secondParticle.mass)));
                 }
             }
         }

@@ -1,4 +1,4 @@
-package Canvas.PhysicsObjects;
+package Canvas.Shapes.PhysicsObjects;
 
 public class Vector2D {
     public double x, y;
@@ -31,5 +31,9 @@ public class Vector2D {
     public Vector2D normalize() {
         double mag = magnitude();
         return new Vector2D(x / mag, y / mag);
+    }
+
+    public double distanceTo(Vector2D vector){
+        return Math.sqrt(Math.pow(this.x-vector.x,2)+Math.pow(this.y-vector.y,2));
     }
 }

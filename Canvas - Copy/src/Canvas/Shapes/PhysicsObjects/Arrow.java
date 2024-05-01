@@ -1,4 +1,4 @@
-package Canvas.PhysicsObjects;
+package Canvas.Shapes.PhysicsObjects;
 
 import java.awt.Color;
 

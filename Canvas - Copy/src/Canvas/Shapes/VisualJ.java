@@ -25,10 +25,11 @@ public class VisualJ extends JFrame{
     private int moveX = 0;
     private int moveY = 0;
     private double timeStep;
+    private double lastIterationTime = 0;
     @Override
     public void paint(Graphics g) {
         
-        profile.timeStart();
+        profile.start();
         if (buffer == null || buffer.getWidth() != getWidth() || buffer.getHeight() != getHeight()) {
             // Create a new buffer if not initialized or if the size has changed
             buffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -53,11 +54,10 @@ public class VisualJ extends JFrame{
                 g2dBuffer.translate(-rotX,-rotY);
             }
         }
-        double time=profile.getTime();
         g2dBuffer.setColor(Color.RED);
-        g2dBuffer.drawString(time+" "+shapes.size(),100,100);
+        lastIterationTime = profile.getTime();
         g.drawImage(buffer, 0, 0, this);
-        profile.timeEnd();
+        profile.stop();
         timeStep++;
     }
     public void createWorld(String title,int width, int height,Color color){
@@ -139,5 +139,18 @@ public class VisualJ extends JFrame{
     }
     public int[] getFrameMove(){
         return new int[]{moveX,moveY};
+    }
+    public boolean moveIndex(Obj object, int index){
+        int currentIndex = shapes.indexOf(object);
+        if (currentIndex==-1){
+            return false;
+        }
+        Obj temp = shapes.get(index);
+        shapes.set(index, object);
+        shapes.set(currentIndex, temp);
+        return true;
+    }
+    public double getIterationTime(){
+        return lastIterationTime;
     }
 }

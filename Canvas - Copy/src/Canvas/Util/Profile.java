@@ -4,11 +4,11 @@ public class Profile {
     private long startTime;
     private long total;
     public Profile (){};
-    public void timeStart(){
+    public void start(){
         runs++;
         startTime = System.currentTimeMillis();
     }
-    public void timeEnd(){
+    public void stop(){
         runs++;
         total+=getTime();
     }

@@ -24,6 +24,9 @@ public class Text extends Obj{
     public void setFont(String fontType, int styleType, int fontSize){
         font=new Font(fontType, styleType, fontSize);
     }
+    public String getText(){
+        return str;
+    }
     public void setText(String newText){
         this.str=newText;
         recheck();

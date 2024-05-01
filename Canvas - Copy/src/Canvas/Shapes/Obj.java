@@ -2,11 +2,11 @@ package Canvas.Shapes;
 import java.awt.*;
 import java.awt.Rectangle;
 
-import Canvas.PhysicsObjects.Vector2D;
+import Canvas.Shapes.PhysicsObjects.Vector2D;
 /**
  * Base class for all shapes of the library
  */
-public class Obj{
+public abstract class Obj{
     protected String type;
     protected Vector2D coords = new Vector2D(0, 0);
     protected int width;
@@ -100,8 +100,9 @@ public class Obj{
         double radius=Math.sqrt(Math.pow(x-(coords.x+width/2),2)+Math.pow(y-(coords.y+length/2),2));
         double curRad = Math.toDegrees(Math.atan2((coords.y+length/2) - y, (coords.x+width/2) - x));
         xxcoord=(int)(x+radius*Math.cos(Math.toRadians(degrees2+curRad)))-(int)coords.x-width/2;
-        xycoord=(int)(y+radius*Math.sin(Math.toRadians(degrees2+curRad)))-(int)coords.x-length/2;
+        xycoord=(int)(y+radius*Math.sin(Math.toRadians(degrees2+curRad)))-(int)coords.y-length/2;
     }
+
     /**
      * Set the position of the shape
      * @param x
@@ -125,5 +126,17 @@ public class Obj{
      */
     public void show(Graphics2D g2dBuffer){
 
+    }
+
+    public Vector2D getCoords(){
+        return coords;
+    }
+
+    public int getWidth(){
+        return width;
+    }
+
+    public int getLength(){
+        return length;
     }
 }

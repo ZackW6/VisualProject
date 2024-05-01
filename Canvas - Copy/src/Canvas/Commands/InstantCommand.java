@@ -8,7 +8,6 @@ public class InstantCommand extends CommandBase{
      * Simplified Thread runOnce
      * @param run Runnable to run
      */
-    private Thread thread;
     private boolean isThread=false;
     private Runnable runner;
     /**
@@ -18,7 +17,13 @@ public class InstantCommand extends CommandBase{
     public InstantCommand(Runnable runner){
         this.runner=runner;
         thread = new Thread(() -> {
-            runner.run();
+            try {
+                runner.run();
+            } catch (Exception e) {
+                System.out.println("CaughtIC");
+            }
+            
+            isThread = false;
         });
     }
     /**
@@ -46,7 +51,12 @@ public class InstantCommand extends CommandBase{
         stop();
         this.runner=runner;
         thread = new Thread(() -> {
-            runner.run();
+            try {
+                runner.run();
+            } catch (Exception e) {
+                System.out.println("CaughtIC");
+            }
+            isThread=false;
         });
         if (isThread){
             start();

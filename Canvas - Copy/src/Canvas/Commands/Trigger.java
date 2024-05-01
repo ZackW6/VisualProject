@@ -1,9 +1,11 @@
 package Canvas.Commands;
 
+import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
 public class Trigger {
     BooleanSupplier supplier;
+    private ArrayList<CommandBase> commands = new ArrayList<CommandBase>();
     public Trigger (BooleanSupplier supplier){
         this.supplier = supplier;
     }
@@ -24,14 +26,20 @@ public class Trigger {
         Runnable checker = ()->{
             if (supplier.getAsBoolean()){
                 if (!wasOn.getBoolean()){
-                    runner.run();
+                    try {
+                        runner.run();
+                    } catch (Exception e) {
+                        System.out.println("CaughtOT");
+                    }
+                    
                     wasOn.set(true);
                 }
             }else{
                 wasOn.set(false);
             }
         };
-        Command command = new Command(checker, 10);
+        CommandBase command = new Command(checker, 10);
+        commands.add(command);
         command.start();
         return this;
     }
@@ -50,7 +58,8 @@ public class Trigger {
                 wasOn.set(false);
             }
         };
-        Command command = new Command(checker, 10);
+        CommandBase command = new Command(checker, 10);
+        commands.add(command);
         command.start();
         return this;
     }
@@ -60,10 +69,15 @@ public class Trigger {
     public Trigger whileTrue(Runnable runner, double time){
         Runnable checker = ()->{
             if (supplier.getAsBoolean()){
-                runner.run();
+                try {
+                    runner.run();
+                } catch (Exception e) {
+                    System.out.println("CaughtWT");
+                }
             }
         };
-        Command command = new Command(checker, time);
+        CommandBase command = new Command(checker, time);
+        commands.add(command);
         command.start();
         return this;
     }
@@ -76,11 +90,19 @@ public class Trigger {
                 runner.run();
             }
         };
-        Command command = new Command(checker, time);
+        CommandBase command = new Command(checker, time);
+        commands.add(command);
         command.start();
+        
         return this;
     }
     public Trigger whileFalse(CommandBase command){
         return whileFalse(command.getRunnable(), command.getTimer());
+    }
+    public void endAll(){
+        for (int i =0; i<commands.size();i++){
+            commands.get(i).stop();
+        }
+        commands.clear();
     }
 }
