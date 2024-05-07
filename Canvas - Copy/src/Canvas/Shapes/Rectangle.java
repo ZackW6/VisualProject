@@ -2,8 +2,8 @@ package Canvas.Shapes;
 import java.awt.*;
 
 public class Rectangle extends Polygoni{
-    public Rectangle(int X,int Y,int Width,int Height, Color Color,boolean tf){   
-        super("Rectangle",X,Y,new int []{0,Width,Width,0},new int []{0,0,Height,Height},Color,tf);
+    public Rectangle(double X,double Y,double Width,double Height, Color Color,boolean tf){   
+        super("Rectangle",X,Y,new double []{0,Width,Width,0},new double []{0,0,Height,Height},Color,tf);
     }
     /**
      * Set width of the oval

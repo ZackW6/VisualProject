@@ -15,6 +15,7 @@ import Canvas.Shapes.Polygon;
 import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.Text;
 import Canvas.Shapes.VisualJ;
+import Canvas.Shapes.PhysicsObjects.Arrow;
 import Canvas.Shapes.PhysicsObjects.Particle;
 import Canvas.Shapes.PhysicsObjects.StaticSquare;
 import Canvas.Shapes.PhysicsObjects.Vector2D;
@@ -33,8 +34,9 @@ public class App {
     private static StateMachine stateMachine;
     public static void main(String[] args) {
         stateMachine = new StateMachine(vis, mouse, keyboard);
-        // defineShapes(vis);
         vis.startThread();
+        // defineShapes(vis);
+        
         // vis.add(graphicsFR);
         // vis.add(physicsFR);
         
@@ -88,7 +90,7 @@ public class App {
         // mouse.rightPressed().onTrue(()->vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-10,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-10, 20, new Color(175,0,175), true, 100000, new double[]{20,20}, new double[]{0,.005})));
         // command.start();
     }
-    
+
     public static void runAll(VisualJ vis){
         profile.start();
         
@@ -100,7 +102,6 @@ public class App {
                 shapes.get(i).rotate(shapes.get(i).getRotPointDegree()+rand);
                 shapes.get(i).rotPoint(vis.WIDTH/2,vis.HEIGHT/2,shapes.get(i).getRotPointDegree()+rand);
                 shapes.get(i).changeFill(true);
-
 
                 // shapes[i].setPosition(Random.randInt(0,WIDTH),Random.randInt(0,HEIGHT));
                 // shapes[i].setColor(ColorEXT.getColorBasedXY(shapes[i].xcoord, shapes[i].ycoord, WIDTH, HEIGHT));
@@ -118,14 +119,15 @@ public class App {
     }
     public static void defineShapes(VisualJ vis){
         ArrayList<Obj> shapes = vis.getObjArray();
-        for (int i=0;i<10000;i++){
+        for (int i=0;i<1000;i++){
             int rand1=Random.randInt(0, vis.getBackgroundWidth());
             int radn2=Random.randInt(0,vis.getBackgroundHeight());
             int dist=(int)((Math.sqrt((Math.pow(vis.getBackgroundWidth()/2-rand1,2))+(Math.pow(vis.getBackgroundHeight()/2-radn2,2))))/50);
             //vis.add(new Square(rand1,radn2,1+dist,ColorEXT.getRandomColor(),true));
             
             //shapes[i]=new Circle(rand1,radn2,1+dist,ColorEXT.getRandomColor(),true);
-            shapes.add(new Polygon(rand1,radn2,new int[]{0,2+dist,(int)(1+dist/2)},new int[]{0,0,3+dist},ColorEXT.getRandomColor(), false));
+            // shapes.add(new Polygon(rand1,radn2,new int[]{0,2+dist,(int)(1+dist/2)},new int[]{0,0,3+dist},ColorEXT.getRandomColor(), false));
+            shapes.add(new Arrow(rand1,radn2,20,10,ColorEXT.getRandomColor(), true));
             // shapes.set(i,new Line(rand1,radn2,new int[]{30+dist,0},new int[]{0,10+dist},ColorEXT.getColorBasedXY(rand1,radn2,vis.getBackgroundWidth(),vis.getBackgroundHeight()), 1+dist));
             // Line line2=new Line(10,0,new int[]{30,0},new int[]{0,30},Color.cyan,100);
             // vis.add(line2);

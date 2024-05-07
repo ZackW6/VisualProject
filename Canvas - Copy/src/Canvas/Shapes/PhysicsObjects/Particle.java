@@ -5,18 +5,44 @@ import java.util.ArrayList;
 
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.Square;
+import Canvas.Shapes.VisualJ;
 
 public class Particle extends Circle{
     public static ArrayList<Particle> particleList = new ArrayList<Particle>();
     private double mass;
     private Vector2D velocity;
     private Vector2D acceleration;
-    public Particle(int X, int Y, int Diameter, Color Color, boolean fill, double mass, double[] initVelocity, double[] initAcceleration) {
-        super(X, Y, Diameter, Color, fill);
+    private Arrow velocityArrow;
+    private Arrow accelerationArrow;
+    private boolean haveArrows;
+    public Particle(int X, int Y, int Diameter, Color col, boolean fill, double mass, double[] initVelocity, double[] initAcceleration, boolean haveArrows) {
+        super(X, Y, Diameter, col, fill);
         this.mass = mass;
         this.velocity = new Vector2D(initVelocity[0], initVelocity[1]);
         this.acceleration = new Vector2D(initAcceleration[0], initAcceleration[1]);
+        this.haveArrows = haveArrows;
         particleList.add(0,this);
+        if (haveArrows){
+            Vector2D center1 = new Vector2D(0,0);
+            Vector2D center2 = new Vector2D(velocity.x, velocity.y);
+            Vector2D center3 = new Vector2D(acceleration.x, acceleration.y);
+
+            double dist = center1.distanceTo(center2);
+            velocityArrow = new Arrow(X+Diameter/2, Y+Diameter/2, (int)dist*3, Diameter/2, Color.ORANGE, fill);
+
+            double dist2 = center1.distanceTo(center3);
+            accelerationArrow = new Arrow(X+Diameter/2, Y+Diameter/2, (int)dist2*3, Diameter/2, Color.RED, fill);
+        }
+        
+    }
+
+    public void add(VisualJ vis){
+        if (haveArrows){
+            vis.add(velocityArrow);
+            vis.add(accelerationArrow);
+        }
+        vis.add(this);
+        
     }
 
     public void handleBorderCollision(int borderX1, int borderX2, int borderY1, int borderY2, double elasticity){
@@ -84,7 +110,7 @@ public class Particle extends Circle{
             // Distance calculation
             double dist = center1.distanceTo(center2);
 
-            if (dist <= radius1 + radius2 && !this.equals(secondParticle)) {
+            if (dist <= radius1+radius2 && !this.equals(secondParticle)) {
                 Vector2D n = center2.subtract(center1);
                 double distance = n.magnitude();
                 double overlap = 0.5 * (radius1 + radius2 - distance);
@@ -110,7 +136,7 @@ public class Particle extends Circle{
 
                 // Update velocities
                 this.velocity = v1nPrimeVec.add(v1tPrimeVec).multiply(elasticity);
-                secondParticle.velocity = v2nPrimeVec.add(v2tPrimeVec).multiply(elasticity);
+                particleList.get(i).velocity = v2nPrimeVec.add(v2tPrimeVec).multiply(elasticity);
 
                 // Positional correction to avoid sinking issues
                 if (overlap > 0) {
@@ -235,6 +261,23 @@ public class Particle extends Circle{
         velocity.x+=acceleration.x;
         velocity.y+=acceleration.y;
         this.move(velocity.x,velocity.y);
+        if (haveArrows){
+            velocityArrow.setPosition(coords.x+width/2,coords.y+width/2);
+            accelerationArrow.setPosition(coords.x+width/2,coords.y+width/2);
+
+            Vector2D center1 = new Vector2D(0,0);
+            Vector2D center2 = new Vector2D(velocity.x, velocity.y);
+            Vector2D center3 = new Vector2D(acceleration.x, acceleration.y);
+
+            double dist = center1.distanceTo(center2);
+            velocityArrow.setSize(this.width, dist*10*width/20);
+            velocityArrow.rotateAroundBase((int)center2.calculateAngleBetweenPoints(center1)+90);
+
+            double dist2 = center1.distanceTo(center3);
+            accelerationArrow.setSize(this.width/2, (int)(dist2*2500)*width/20);
+            accelerationArrow.rotateAroundBase((int)center3.calculateAngleBetweenPoints(center1)+90);
+        }
+
     }
 
     public int getIndex(){

@@ -32,8 +32,27 @@ public class Vector2D {
         double mag = magnitude();
         return new Vector2D(x / mag, y / mag);
     }
-
+    
     public double distanceTo(Vector2D vector){
         return Math.sqrt(Math.pow(this.x-vector.x,2)+Math.pow(this.y-vector.y,2));
+    }
+
+    public double calculateAngleBetweenPoints(Vector2D other) {
+        double deltaX;
+        double deltaY;
+        deltaX = other.x - this.x;
+        deltaY = other.y - this.y;
+
+        double angleRadians = ((Math.atan(deltaY/deltaX)));
+
+        double rotation = Math.toDegrees(angleRadians);
+        if (this.x<=other.x){
+            return rotation;
+        }
+        if (rotation>0){
+            return rotation-180;
+        }else{
+            return rotation+180;
+        }
     }
 }

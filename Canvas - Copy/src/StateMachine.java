@@ -60,6 +60,16 @@ public class StateMachine {
         keyboardSpace = keyboard.keyPressed("Space").onTrue(new InstantCommand(()->{
             moveState(1);
         }));
+        keyboardSpace = keyboard.keyPressed("r").onTrue(new InstantCommand(()->{
+            moveState(0);
+        }));
+        keyboardSpace = keyboard.keyPressed("b").onTrue(new InstantCommand(()->{
+            moveState(-1);
+        }));
+        keyboardSpace = keyboard.keyPressed("Escape").onTrue(new InstantCommand(()->{
+            System.exit(0);
+
+        }));
         
         moveAdder = ()->{};
         run = ()->{};
@@ -72,7 +82,8 @@ public class StateMachine {
         setState(0);
     }
     public enum State{
-        Stars(8),
+        Stars(9),
+        ArrowPhysics(8),
         Physics(7),
         BadPhysics(6),
         Input(5),
@@ -109,6 +120,9 @@ public class StateMachine {
     public void moveState(int stateMove){
         index += stateMove;
         index = index % State.values().length;
+        if (index<0){
+            index+=State.values().length;
+        }
         runState(State.getStateFromIndex(index));
     }
     public State getState(){
@@ -144,6 +158,9 @@ public class StateMachine {
                 physicsCase();
                 break;
             case Physics:
+                physicsCase();
+                break;
+            case ArrowPhysics:
                 physicsCase();
                 break;
             default:
@@ -244,7 +261,7 @@ public class StateMachine {
                 };
                 mouseLeft = mouse.leftPressed().whileTrue(run2,3);
                 mouseRight.endAll();
-                mouseRight = mouse.rightPressed().onTrue(()->vis.add(new Square(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-100,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-100, 200, new Color(175,0,175), true)));
+                mouseRight = mouse.rightPressed().onTrue(()->vis.add(new Square(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-25,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-25, 50, ColorEXT.getRandomColor(), true)));
                 keyboardA.endAll();
                 keyboardA = keyboard.keyPressed("a").onTrue(()->vis.add(new Circle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-50,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-50,100,ColorEXT.getRandomColor(), false)));
             };
@@ -285,11 +302,31 @@ public class StateMachine {
                     Runnable run2 = ()->{
                         int rand = Random.randInt(5,20);
                         Color col = new Color(0,rand*10,255);
-                        vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-5,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-5, 10, col, true, rand, new double[]{1,1}, new double[]{0,.005}));
+                        Particle part = new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-5,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-5, 10, col, true, rand, new double[]{1,1}, new double[]{0,.01},false);
+                        part.add(vis);
                     };
+                    if (State.getStateFromIndex(index)==State.ArrowPhysics){
+                        run2 = ()->{
+                            int rand = Random.randInt(5,20);
+                            Color col = new Color(0,rand*10,255);
+                            Particle part = new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-5,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-5, 10, col, true, rand, new double[]{1,1}, new double[]{0,.01},true);
+                            part.add(vis);
+                        };
+                    }
                     mouseLeft = mouse.leftPressed().whileTrue(run2,3);
                     mouseRight.endAll();
-                    mouseRight = mouse.rightPressed().onTrue(()->vis.add(new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-10,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-10, 20, new Color(175,0,175), true, 1000, new double[]{5,5}, new double[]{0,.005})));
+                    Runnable mouseRightAction = ()->{
+                        Particle part = new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-10,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-10, 20, new Color(175,0,175), true, 1000, new double[]{5,5}, new double[]{0,.01},false);
+                        part.add(vis);
+                    };
+                    if (State.getStateFromIndex(index)==State.ArrowPhysics){
+                        mouseRightAction = ()->{
+                            Particle part = new Particle(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-10,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-10, 20, new Color(175,0,175), true, 1000, new double[]{5,5}, new double[]{0,.01},true);
+                            part.add(vis);
+                        };
+                    }
+                    mouseRight = mouse.rightPressed().onTrue(mouseRightAction);
+
                     keyboardA.endAll();
                     keyboardA = keyboard.keyPressed("a").onTrue(()->vis.add(new StaticSquare(mouse.getMouseCoords()[0]-vis.getFrameMove()[0]-50,mouse.getMouseCoords()[1]-vis.getFrameMove()[1]-50,100,ColorEXT.getRandomColor(), false)));
                     addFrameRateText = ()->{
@@ -309,9 +346,9 @@ public class StateMachine {
         Oval oval=new Oval(0,100,200,100,Color.blue,true);
         Square square=new Square(700,50,100,Color.green,true);  
         Circle circle=new Circle(500,300,100,Color.orange,false);
-        Polygon polygon=new Polygon(500,50,new int[]{100,0,0,100},new int[]{0,0,300,300},Color.yellow,true);
-        Line line=new Line(400,100,new int[]{0,200},new int[]{0,200},Color.cyan,1);
-        Line line2=new Line(300,100,new int[]{30,0},new int[]{0,300},Color.cyan,10);
+        Polygon polygon=new Polygon(500,50,new double[]{100,0,0,100},new double[]{0,0,300,300},Color.yellow,true);
+        Line line=new Line(400,100,new double[]{0,200},new double[]{0,200},Color.cyan,1);
+        Line line2=new Line(300,100,new double[]{30,0},new double[]{0,300},Color.cyan,10);
         Text text=new Text(100,450,30,Color.white,"Text");
         rect.move(100,100);
         vis.add(rect);
@@ -344,13 +381,16 @@ public class StateMachine {
                         case Physics:
                             particle.handleCircleCollision(1);
                             break;
+                        case ArrowPhysics:
+                             particle.handleCircleCollision(1);
+                             break;
                         case BadPhysics:
                             particle.handleCircleCollisionOld(1);
                             break;
                         default:
                             break;
                     }
-                    particle.handleCircleCollision(1);
+                    
                     particle.applyMovement();
                     ArrayList<StaticSquare> arr = StaticSquare.getArrayList();
                     for (int y = 0; y<arr.size();y++){
@@ -478,7 +518,7 @@ public class StateMachine {
     }
     public void runAllStars(VisualJ vis){
         ArrayList<Obj> shapes = vis.shapes;
-        for (int i=0;i<3000;i++){
+        for (int i=0;i<1000;i++){
             try {
                 shapes.get(i);
             } catch (Exception e) {
@@ -493,7 +533,7 @@ public class StateMachine {
         }
         
         
-        for (int i=0;i<3000;i++){
+        for (int i=0;i<1000;i++){
             if (shapes.get(i)!=null){
                 time.set(i,.1+time.get(i));
                 shapes.get(i).move(2+(int)(time.get(i)/2),0);

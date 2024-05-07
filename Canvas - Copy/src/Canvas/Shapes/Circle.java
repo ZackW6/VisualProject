@@ -19,9 +19,9 @@ public class Circle extends Obj{
     @Override
     public void show(Graphics2D g2dBuffer){
         if (fill){
-            g2dBuffer.fillOval(-width/2, -length/2, width, width);
+            g2dBuffer.fillOval((int)-width/2, (int)-length/2, (int)width, (int)width);
         }else{
-            g2dBuffer.drawOval(-width/2, -length/2, width, width);
+            g2dBuffer.drawOval((int)-width/2, (int)-length/2, (int)width, (int)width);
         }
     }
 }

@@ -21,6 +21,7 @@ public abstract class CommandBase {
             thread.sleep((long)time);
         } catch (InterruptedException e) {
             // TODO Auto-generated catch block
+            System.out.println("TIME");
             e.printStackTrace();
         }
     }

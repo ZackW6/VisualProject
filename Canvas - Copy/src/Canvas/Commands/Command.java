@@ -44,6 +44,7 @@ public class Command extends CommandBase{
                         }
                     } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
+                        System.out.println("TIME");
                         e.printStackTrace();
                     }
                 }else{
@@ -113,6 +114,7 @@ public class Command extends CommandBase{
                         }
                     } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
+                        System.out.println("TIME");
                         e.printStackTrace();
                     }
                 }else{

@@ -39,21 +39,26 @@ public class VisualJ extends JFrame{
         g2dBuffer.translate(moveX,moveY);
         g2dBuffer.setColor(getBackground());
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
-        for (int i = 0; i < shapes.size(); i++) {
-            if (shapes.get(i)!=null){
-                double xp=shapes.get(i).coords.x+shapes.get(i).xxcoord;
-                double yp=shapes.get(i).coords.y+shapes.get(i).xycoord;
-                double radians=(Math.toRadians(shapes.get(i).degree));
-                double rotX=xp+shapes.get(i).width/2;
-                double rotY=yp+shapes.get(i).length/2;
-                g2dBuffer.setColor(shapes.get(i).col);
-                g2dBuffer.translate(rotX,rotY);
-                g2dBuffer.rotate(radians);
-                shapes.get(i).show(g2dBuffer);
-                g2dBuffer.rotate(-radians);
-                g2dBuffer.translate(-rotX,-rotY);
+        try {
+            for (int i = 0; i < shapes.size(); i++) {
+                if (shapes.get(i)!=null){
+                    double xp=shapes.get(i).coords.x+shapes.get(i).xxcoord;
+                    double yp=shapes.get(i).coords.y+shapes.get(i).xycoord;
+                    double radians=(Math.toRadians(shapes.get(i).degree));
+                    double rotX=xp+shapes.get(i).width/2;
+                    double rotY=yp+shapes.get(i).length/2;
+                    g2dBuffer.setColor(shapes.get(i).col);
+                    g2dBuffer.translate(rotX,rotY);
+                    g2dBuffer.rotate(radians);
+                    shapes.get(i).show(g2dBuffer);
+                    g2dBuffer.rotate(-radians);
+                    g2dBuffer.translate(-rotX,-rotY);
+                }
             }
+        } catch (Exception e) {
+            System.out.println("CaughtVIS");
         }
+        
         g2dBuffer.setColor(Color.RED);
         lastIterationTime = profile.getTime();
         g.drawImage(buffer, 0, 0, this);

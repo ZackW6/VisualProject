@@ -25,12 +25,12 @@ public class PolyShape extends Obj{
             if (shapes[i].coords.x<lowx){
                 lowx=(int)shapes[i].coords.x;
             }else if (shapes[i].coords.x+shapes[i].width>highxW){
-                highxW=(int)shapes[i].coords.x+shapes[i].width;
+                highxW=(int)shapes[i].coords.x+(int)shapes[i].width;
             }
             if (shapes[i].coords.y<lowy){
                 lowy=(int)shapes[i].coords.y;
             }else if (shapes[i].coords.y+shapes[i].length>highyL){
-                highyL=(int)shapes[i].coords.y+shapes[i].length;
+                highyL=(int)shapes[i].coords.y+(int)shapes[i].length;
             }
         }
         //this.xcoord=

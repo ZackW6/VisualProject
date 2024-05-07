@@ -49,14 +49,14 @@ public class Text extends Obj{
      */
     @Override
     public void show(Graphics2D g2dBuffer){
-        int xp=(int)coords.x+xxcoord;
+        int xp=(int)coords.x+(int)xxcoord;
         //System.out.println(shapes[i].xxcoord);
-        int yp=(int)coords.y+xycoord;
+        int yp=(int)coords.y+(int)xycoord;
         double radians=(Math.toRadians(degree));
-        int rotX=xp+width/2;
-        int rotY=yp+length/2;
-        int xtra=-width/2;
-        int ytra=-length/2;
+        int rotX=xp+(int)width/2;
+        int rotY=yp+(int)length/2;
+        int xtra=-(int)width/2;
+        int ytra=-(int)length/2;
         Object[] stuff=objectInformation();
                         
                                   

@@ -9,14 +9,14 @@ import Canvas.Shapes.PhysicsObjects.Vector2D;
 public abstract class Obj{
     protected String type;
     protected Vector2D coords = new Vector2D(0, 0);
-    protected int width;
-    protected int length;
+    protected double width;
+    protected double length;
     protected Color col;
-    protected int degree=0;
+    protected double degree=0;
     protected boolean fill;
-    protected int xxcoord;
-    protected int xycoord;
-    protected int degrees2=0;
+    protected double xxcoord;
+    protected double xycoord;
+    protected double degrees2=0;
     /**
      * Base class public for the Obj class, not meant to be implimented 
      * @param type
@@ -27,7 +27,7 @@ public abstract class Obj{
      * @param col
      * @param fill
      */
-    protected Obj(String type,int xcoord,int ycoord,int width, int length,Color col,boolean fill){
+    protected Obj(String type,double xcoord,double ycoord,int width, int length,Color col,boolean fill){
         this.type=type;
         this.coords.x=xcoord;
         this.coords.y=ycoord;
@@ -40,7 +40,7 @@ public abstract class Obj{
      * Rotate based on center
      * @param rotateDegree
      */
-    public void rotate(int rotateDegree){
+    public void rotate(double rotateDegree){
         while (rotateDegree>=360){
             rotateDegree-=360;
         }
@@ -56,10 +56,10 @@ public abstract class Obj{
         this.coords.y=moveY+coords.y;
     }
 
-    public int getDegree(){
+    public double getDegree(){
         return degree;
     }
-    public int getRotPointDegree(){
+    public double getRotPointDegree(){
         return degrees2;
     }
     
@@ -95,7 +95,7 @@ public abstract class Obj{
      * @param y
      * @param deg
      */
-    public void rotPoint(int x, int y, int deg){
+    public void rotPoint(double x, double y, double deg){
         degrees2=deg;
         double radius=Math.sqrt(Math.pow(x-(coords.x+width/2),2)+Math.pow(y-(coords.y+length/2),2));
         double curRad = Math.toDegrees(Math.atan2((coords.y+length/2) - y, (coords.x+width/2) - x));
@@ -108,9 +108,9 @@ public abstract class Obj{
      * @param x
      * @param y
      */
-    public void setPosition(int x, int y){
+    public void setPosition(double x, double y){
         this.coords.x=x;
-        this.coords.x=y;
+        this.coords.y=y;
     }
     /**
      * Set the current color of the shape
@@ -132,11 +132,11 @@ public abstract class Obj{
         return coords;
     }
 
-    public int getWidth(){
+    public double getWidth(){
         return width;
     }
 
-    public int getLength(){
+    public double getLength(){
         return length;
     }
 }
