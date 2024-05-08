@@ -21,6 +21,7 @@ public class InstantCommand extends CommandBase{
                 runner.run();
             } catch (Exception e) {
                 System.out.println("CaughtIC");
+                e.printStackTrace();
             }
             
             isThread = false;
@@ -55,6 +56,7 @@ public class InstantCommand extends CommandBase{
                 runner.run();
             } catch (Exception e) {
                 System.out.println("CaughtIC");
+                e.printStackTrace();
             }
             isThread=false;
         });

@@ -46,6 +46,16 @@ public class Line extends Polygoni{
         this.xcoords=newx;
         this.ycoords=newy;
     }
+
+    private void remakeLine(int[] arrintx, int[] arrinty, double LineWidth){
+        double slope;
+        if (arrintx[0]<arrintx[1]){
+            slope = (arrinty[1]-arrinty[0]);
+        }else{
+            slope = (arrinty[0]-arrinty[1]);
+        }
+    }
+    
     @Override
     public void changeVertexPos(int indexOfPoint, double x, double y){
         this.xcoords[indexOfPoint]=x;

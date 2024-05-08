@@ -34,6 +34,7 @@ public class Command extends CommandBase{
                         runner.run();
                     } catch (Exception e) {
                         System.out.println("CaughtC");
+                        e.printStackTrace();
                     }
                     
                     double expendedTime = profile.getTime();
@@ -104,6 +105,7 @@ public class Command extends CommandBase{
                         runner.run();
                     } catch (Exception e) {
                         System.out.println("CaughtC");
+                        e.printStackTrace();
                     }
                     
                     double expendedTime = profile.getTime();

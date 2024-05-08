@@ -30,6 +30,7 @@ public class Trigger {
                         runner.run();
                     } catch (Exception e) {
                         System.out.println("CaughtOT");
+                        e.printStackTrace();
                     }
                     
                     wasOn.set(true);
@@ -73,6 +74,7 @@ public class Trigger {
                     runner.run();
                 } catch (Exception e) {
                     System.out.println("CaughtWT");
+                    e.printStackTrace();
                 }
             }
         };
