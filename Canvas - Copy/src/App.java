@@ -34,6 +34,7 @@ public class App {
         vis.startThread();
         defineShapes(vis);
         Command runner = new Command(()->runAll(vis), 10);
+        runner.start();
     }
 
     public static void runAll(VisualJ vis){
