@@ -10,10 +10,13 @@ import Canvas.Inputs.KeyInput;
 import Canvas.Inputs.MouseInput;
 import Canvas.Inputs.MouseInput.MouseInputs;
 import Canvas.Inputs.MouseInput.MouseSide;
+import Canvas.Shapes.Circle;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.Obj;
+import Canvas.Shapes.Oval;
 import Canvas.Shapes.Polygon;
 import Canvas.Shapes.Rectangle;
+import Canvas.Shapes.Square;
 import Canvas.Shapes.Text;
 import Canvas.Shapes.VisualJ;
 import Canvas.Shapes.PhysicsObjects.Arrow;
@@ -43,20 +46,23 @@ public class App {
         ArrayList<Obj> shapes = vis.getObjArray();
         for (int i=0;i<shapes.size();i++){
             if (shapes.get(i)!=null){
-                //TODO whatever function
+                shapes.get(i).rotate(1+shapes.get(i).getDegree());
             }
         }
         profile.stop();
     }
     public static void defineShapes(VisualJ vis){
-        for (int i=0;i<1000;i++){
+        for (int i=0;i<10;i++){
             int x = Random.randInt(0, vis.WIDTH);
             int y = Random.randInt(0, vis.HEIGHT);
-            int randLengthX = Random.randInt(0, 20);
-            int randLengthY = Random.randInt(0, 20);
-            int randLengthX2 = Random.randInt(0, 20);
-            int randLengthY2 = Random.randInt(0, 20);
-            vis.add(new Line(x, y, new double[]{randLengthX,randLengthX2}, new double[]{randLengthY,randLengthY2}, Color.blue, 10));
+            int fx = Random.randInt(-300, 300);
+            int fy = Random.randInt(-300, 300);
+            int nx = Random.randInt(-300, 300);
+            int ny = Random.randInt(-300, 300);
+            vis.add(new Polygon(x, y, new double[]{0,fx,nx}, new double[]{0,fy,ny}, Color.blue, true));
+            vis.add(new Circle(x+fx, y+fy, 5, Color.RED, true));
+            vis.add(new Circle(x+nx, y+ny, 5, Color.RED, true));
+            // vis.add(new Oval(x,y, 100,200,ColorEXT.getRandomColor(),true));
         }
     }
 }

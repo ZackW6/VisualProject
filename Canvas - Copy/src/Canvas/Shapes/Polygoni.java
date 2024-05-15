@@ -60,7 +60,9 @@ public abstract class Polygoni extends Obj{
 
         return temp;
     }
-
+    public void resetPolygon(){
+        
+    }
     @Override
     protected Object[] objectInformation(){
         return new Object[]{this.xcoords,this.ycoords};
@@ -97,16 +99,6 @@ public abstract class Polygoni extends Obj{
         this.xcoords[indexOfPoint]=x;
         this.ycoords[indexOfPoint]=y;
 
-    }
-    protected void resetRect(){
-        xcoords[0]=0;
-        ycoords[0]=0;
-        xcoords[1]=width;
-        ycoords[1]=0;
-        xcoords[2]=width;
-        ycoords[2]=length;
-        xcoords[3]=0;
-        ycoords[3]=length;
     }
     /**
      * The Polygon application of the show method, draws a Polygon based on instance data

@@ -23,14 +23,17 @@ public class Line extends Polygoni{
         double[] newx=new double[4];
         double[] newy=new double[4];
 
-        newx[0]=(arrintx[0]);
-        newy[0]=(arrinty[0]);
-        newx[1]=(arrintx[0]);
-        newy[1]=(arrinty[0]);
-        newx[2]=(arrintx[1]);
-        newy[2]=(arrinty[1]);
-        newx[3]=(arrintx[1]);
-        newy[3]=(arrinty[1]);
+        double movex = Math.sqrt((Math.pow(LineWidth/2,2))/(1+Math.pow(perpendicular,2)));
+        double movey = movex * perpendicular;
+
+        newx[0]=(arrintx[0]+movex);
+        newy[0]=(arrinty[0]+movey);
+        newx[1]=(arrintx[0]-movex);
+        newy[1]=(arrinty[0]-movey);
+        newx[2]=(arrintx[1]-movex);
+        newy[2]=(arrinty[1]-movey);
+        newx[3]=(arrintx[1]+movex);
+        newy[3]=(arrinty[1]+movey);
         this.xcoords=newx;
         this.ycoords=newy;
     }
