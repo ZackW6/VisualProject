@@ -9,6 +9,7 @@ public class Trigger {
     public Trigger (BooleanSupplier supplier){
         this.supplier = supplier;
     }
+
     private class BoolClass{
         private boolean bool;
         private BoolClass(boolean init){
@@ -21,13 +22,15 @@ public class Trigger {
             return bool;
         }
     }
-    public Trigger onTrue(Runnable runner){
+
+    public Trigger onTrue(CommandBase runner){
+        commands.add(runner);
         BoolClass wasOn = new BoolClass(false);
         Runnable checker = ()->{
             if (supplier.getAsBoolean()){
-                if (!wasOn.getBoolean()){
+                if (!wasOn.getBoolean() && !runner.isRunning()){
                     try {
-                        runner.run();
+                        runner.schedule();
                     } catch (Exception e) {
                         System.out.println("CaughtOT");
                         e.printStackTrace();
@@ -39,71 +42,63 @@ public class Trigger {
                 wasOn.set(false);
             }
         };
-        CommandBase command = new Command(checker, 10);
+        Command command = new TimedCommand(checker, 10);
         commands.add(command);
-        command.start();
+        command.schedule();
         return this;
     }
-    public Trigger onTrue(CommandBase command){
-        return onTrue(command.getRunnable());
-    }
-    public Trigger onFalse(Runnable runner){
+
+    public Trigger onFalse(CommandBase runner){
+        commands.add(runner);
         BoolClass wasOn = new BoolClass(true);
         Runnable checker = ()->{
             if (!supplier.getAsBoolean()){
-                if (!wasOn.getBoolean()){
-                    runner.run();
+                if (!wasOn.getBoolean() && !runner.isRunning()){
+                    runner.schedule();
                     wasOn.set(true);
                 }
             }else{
                 wasOn.set(false);
             }
         };
-        CommandBase command = new Command(checker, 10);
+        CommandBase command = new TimedCommand(checker, 10);
         commands.add(command);
-        command.start();
+        command.schedule();
         return this;
     }
-    public Trigger onFalse(CommandBase command){
-        return onFalse(command.getRunnable());
-    }
-    public Trigger whileTrue(Runnable runner, double time){
+    public Trigger whileTrue(CommandBase runner, double time){
+        commands.add(runner);
         Runnable checker = ()->{
-            if (supplier.getAsBoolean()){
+            if (supplier.getAsBoolean() && !runner.isRunning()){
                 try {
-                    runner.run();
+                    runner.schedule();
                 } catch (Exception e) {
                     System.out.println("CaughtWT");
                     e.printStackTrace();
                 }
             }
         };
-        CommandBase command = new Command(checker, time);
+        CommandBase command = new TimedCommand(checker, time);
         commands.add(command);
-        command.start();
+        command.schedule();
         return this;
     }
-    public Trigger whileTrue(CommandBase command){
-        return whileTrue(command.getRunnable(), command.getTimer());
-    }
-    public Trigger whileFalse(Runnable runner, double time){
+    public Trigger whileFalse(CommandBase runner, double time){
+        commands.add(runner);
         Runnable checker = ()->{
-            if (!supplier.getAsBoolean()){
-                runner.run();
+            if (!supplier.getAsBoolean() && !runner.isRunning()){
+                runner.schedule();
             }
         };
-        CommandBase command = new Command(checker, time);
+        CommandBase command = new TimedCommand(checker, time);
         commands.add(command);
-        command.start();
+        command.schedule();
         
         return this;
     }
-    public Trigger whileFalse(CommandBase command){
-        return whileFalse(command.getRunnable(), command.getTimer());
-    }
     public void endAll(){
         for (int i =0; i<commands.size();i++){
-            commands.get(i).stop();
+            commands.get(i).cancel();
         }
         commands.clear();
     }

@@ -18,5 +18,10 @@ public class Profile {
     public long getTime(){
         return System.currentTimeMillis()-startTime;
     }
+    public void reset(){
+        runs = 0;
+        startTime = 0;
+        total = 0;
+    }
 
 }

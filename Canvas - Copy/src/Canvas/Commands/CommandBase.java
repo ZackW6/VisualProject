@@ -1,28 +1,97 @@
 package Canvas.Commands;
 
+import java.util.ArrayList;
+
 public abstract class CommandBase {
-    protected Thread thread;
 
-    public abstract void start();
+    private ArrayList<Runnable> initRuns = new ArrayList<>();
+    private ArrayList<Runnable> afterRuns = new ArrayList<>();
 
-    public abstract void stop();
+    protected Thread thread = new Thread(()->{
+        initialize();
+        for (Runnable run : initRuns){
+            run.run();
+        }
+        while(true){
+            execute();
+            if (isCanceled()){
+                finallyDo();
+                for (Runnable run : afterRuns){
+                    run.run();
+                }
+                break;
+            }
+        }
+    });
 
-    public abstract void setRunnable(Runnable runner);
+    protected boolean isCanceled = false;
 
-    public abstract boolean isThreadRunning();
+    public abstract void initialize();
 
-    public abstract Runnable getRunnable();
+    public abstract void execute();
 
-    public abstract double getTimer();
+    public abstract void finallyDo();
 
-    @SuppressWarnings("static-access")
-    public void sleep(double time){
+    public CommandBase startWith(Runnable run){
+        initRuns.add(run);
+        return this;
+    }
+
+    public CommandBase finallyDo(Runnable run){
+        afterRuns.add(run);
+        return this;
+    }
+
+    public void schedule(){
+        isCanceled = false;
+        this.thread = new Thread(()->{
+            initialize();
+            for (Runnable run : initRuns){
+                run.run();
+            }
+            while(true){
+                execute();
+                if (isCanceled()){
+                    finallyDo();
+                    for (Runnable run : afterRuns){
+                        run.run();
+                    }
+                    break;
+                }
+            }
+        });
+        thread.start();
+    }
+
+    public void cancel(){
+        isCanceled = true;
+    }
+
+    @Deprecated
+    public void interrupt(){
         try {
-            thread.sleep((long)time);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            System.out.println("TIME");
+            thread.interrupt();
+        } catch (Exception e) {
+            System.out.println("Failed");
             e.printStackTrace();
         }
+        
+        finallyDo();
+    }
+
+    public boolean isRunning(){
+        return thread.isAlive();
+    }
+
+    public boolean isCanceled(){
+        return isCanceled;
+    }
+
+    /**
+     * returns initialize, execute, and finally runnables
+     * @return
+     */
+    public Runnable[] getRunLine(){
+        return new Runnable[]{()->initialize(), ()->execute(), ()->finallyDo()};
     }
 }

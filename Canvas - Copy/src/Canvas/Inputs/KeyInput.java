@@ -9,6 +9,7 @@ import Canvas.Shapes.VisualJ;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.function.BooleanSupplier;
 
 public class KeyInput implements KeyListener {
@@ -71,5 +72,13 @@ public class KeyInput implements KeyListener {
         pressedKeys[0].add(key);
         pressedKeys[1].add(false);
         return ()->checkKeyPressed(key);
+    }
+
+    public String systemInput(String enterMessage){
+        Scanner scanner = new Scanner(System.in);
+        System.out.print(enterMessage);
+        String inputString = scanner.nextLine();
+        scanner.close();
+        return inputString;
     }
 }
