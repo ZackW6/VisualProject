@@ -11,21 +11,21 @@ import javax.swing.SwingUtilities;
  */
 public class UserInput {
     public static String getNextLine() {
+        @SuppressWarnings("resource")
         Scanner scanner = new Scanner(System.in);
         String line = scanner.nextLine();
-        scanner.close();
         return line;
     }
     public static int getNextInt() {
+        @SuppressWarnings("resource")
         Scanner scanner = new Scanner(System.in);
         int line = scanner.nextInt();
-        scanner.close();
         return line;
     }
     public static double getNextDouble() {
+        @SuppressWarnings("resource")
         Scanner scanner = new Scanner(System.in);
         double line = scanner.nextDouble();
-        scanner.close();
         return line;
     }
 }

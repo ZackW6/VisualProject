@@ -73,12 +73,4 @@ public class KeyInput implements KeyListener {
         pressedKeys[1].add(false);
         return ()->checkKeyPressed(key);
     }
-
-    public String systemInput(String enterMessage){
-        Scanner scanner = new Scanner(System.in);
-        System.out.print(enterMessage);
-        String inputString = scanner.nextLine();
-        scanner.close();
-        return inputString;
-    }
 }

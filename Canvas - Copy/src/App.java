@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
@@ -15,6 +16,11 @@ import Canvas.Inputs.KeyInput;
 import Canvas.Inputs.MouseInput;
 import Canvas.Inputs.MouseInput.MouseInputs;
 import Canvas.Inputs.MouseInput.MouseSide;
+import Canvas.RoboticsUtil.ClickableButton;
+import Canvas.RoboticsUtil.ObstacleSquare;
+import Canvas.RoboticsUtil.UIRobotGenerator;
+import Canvas.RoboticsUtil.ClickableButton.Side;
+import Canvas.RoboticsUtil.ClickableButton.Action;
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.Obj;
@@ -37,29 +43,40 @@ public class App {
     public static KeyInput keyboard = null;
 
     public static Profile profile = new Profile();
-    public static Text graphicsFR = new Text(100, 120, 15, Color.RED, "");
-    public static Text physicsFR = new Text(100, 140, 15, Color.RED, "");
     public static void main(String[] args) {
         
-        vis = new VisualJ("Simulation",1700,900,Color.black);
+        vis = new VisualJ("Simulation",1700,900,new Color(20,20,20));
         mouse = new MouseInput(vis);
         keyboard = new KeyInput(vis);
+        ObstacleSquare.createBackground(vis, "C:/GitHub/VisualProject/Canvas - Copy/src/Canvas/FileUtil", "background");
+        UIRobotGenerator.generateObstacleFiles(vis,"C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
         
-        String path = keyboard.systemInput("input your path here: ");
+        mouse.addEvent(()->{
+            int[] coords = mouse.getMouseCoords();
+            ClickableButton.processAction(Action.Dragged, Side.Left, new Vector2D(coords[0],coords[1]));
+        }, MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
 
-        FileWriter fileWriter = new FileWriter(path);
-        fileWriter.deleteFile("newFile");
-        
+        mouse.addEvent(()->{
+            int[] coords = mouse.getMouseCoords();
+            ClickableButton.processAction(Action.Dragged, Side.Right, new Vector2D(coords[0],coords[1]));
+        }, MouseInputs.MOUSE_DRAGGED, MouseSide.RIGHT);
+
+        mouse.addEvent(()->{
+            int[] coords = mouse.getMouseCoords();
+            ClickableButton.processAction(Action.Pressed, Side.Left, new Vector2D(coords[0],coords[1]));
+        }, MouseInputs.MOUSE_PRESSED, MouseSide.LEFT);
+
+        mouse.addEvent(()->{
+            int[] coords = mouse.getMouseCoords();
+            ClickableButton.processAction(Action.Pressed, Side.Right, new Vector2D(coords[0],coords[1]));
+        }, MouseInputs.MOUSE_PRESSED, MouseSide.RIGHT);
+
         vis.startThread();
         defineShapes(vis);
        
         CommandBase runner = Commands.timed(()->runAll(vis), 10);
         runner.schedule();
-        CommandBase print = Commands.timed(()->{System.out.println("HI");},500).startWith(()->{System.out.println("Start");}).finallyDo(()->{System.out.println("HERE");});
-        keyboard.keyPressed("a").onTrue(print);
-        keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
-            print.cancel();
-        }));
+
     }
 
     public static void runAll(VisualJ vis){
@@ -68,23 +85,12 @@ public class App {
         ArrayList<Obj> shapes = vis.getObjArray();
         for (int i=0;i<shapes.size();i++){
             if (shapes.get(i)!=null){
-                shapes.get(i).rotate(1+shapes.get(i).getDegree());
+                // shapes.get(i).rotate(1+shapes.get(i).getDegree());
             }
         }
         profile.stop();
     }
     public static void defineShapes(VisualJ vis){
-        for (int i=0;i<10;i++){
-            int x = Random.randInt(0, vis.WIDTH);
-            int y = Random.randInt(0, vis.HEIGHT);
-            int fx = Random.randInt(-300, 300);
-            int fy = Random.randInt(-300, 300);
-            int nx = Random.randInt(-300, 300);
-            int ny = Random.randInt(-300, 300);
-            vis.add(new Line(x, y, new double[]{fx,nx}, new double[]{fy,ny}, Color.blue, 100));
-            vis.add(new Circle(x+fx, y+fy, 5, Color.RED, true));
-            vis.add(new Circle(x+nx, y+ny, 5, Color.RED, true));
-            // vis.add(new Oval(x,y, 100,200,ColorEXT.getRandomColor(),true));
-        }
+        
     }
 }
