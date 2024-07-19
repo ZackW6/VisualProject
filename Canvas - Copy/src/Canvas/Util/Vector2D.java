@@ -1,4 +1,4 @@
-package Canvas.Shapes.PhysicsObjects;
+package Canvas.Util;
 
 public class Vector2D {
     public double x, y;

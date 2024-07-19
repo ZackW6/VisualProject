@@ -13,19 +13,16 @@ public class UserInput {
     public static String getNextLine() {
         Scanner scanner = new Scanner(System.in);
         String line = scanner.nextLine();
-        scanner.close();
         return line;
     }
     public static int getNextInt() {
         Scanner scanner = new Scanner(System.in);
         int line = scanner.nextInt();
-        scanner.close();
         return line;
     }
     public static double getNextDouble() {
         Scanner scanner = new Scanner(System.in);
         double line = scanner.nextDouble();
-        scanner.close();
         return line;
     }
 }

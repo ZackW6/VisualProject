@@ -6,20 +6,33 @@ import javax.swing.JPanel;
 import Canvas.Commands.Trigger;
 import Canvas.Shapes.VisualJ;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.function.BooleanSupplier;
 
 public class KeyInput implements KeyListener {
     @SuppressWarnings("unchecked")
     ArrayList<Object>[] pressedKeys = new ArrayList[2];
-    private VisualJ vis;
+
+    private boolean isGathering = false;
+    private ArrayList<String> currentGather = new ArrayList<>();
+    private boolean ctrlPressed = false;
+
+
     public KeyInput(VisualJ vis) {
+        currentGather.add("");
         pressedKeys[0] = new ArrayList<Object>();
         pressedKeys[1] = new ArrayList<Object>();
-        this.vis = vis;
+
         vis.addKeyListener(this);
     }
 
@@ -39,6 +52,52 @@ public class KeyInput implements KeyListener {
                 break;
             }
         }
+        if (isGathering){
+            if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+                ctrlPressed = true;
+            }
+            if (ctrlPressed && e.getKeyCode() == KeyEvent.VK_V){
+                // lastWasCtrl = true;
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                // Get the clipboard content as a string
+                Transferable contents = clipboard.getContents(null);
+                if (contents != null && contents.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    try {
+                        String clipboardText = (String) contents.getTransferData(DataFlavor.stringFlavor);
+                        currentGather.set(currentGather.size()-1, currentGather.get(currentGather.size()-1)+clipboardText);
+                    } catch (UnsupportedFlavorException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    } catch (IOException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+                return;
+            }
+
+            if (KeyEvent.getKeyText(e.getKeyCode()).equals("Backspace")){
+                if (currentGather.get(currentGather.size()-1).length()>0){
+                    currentGather.set(currentGather.size()-1, currentGather.get(currentGather.size()-1).substring(0,currentGather.get(currentGather.size()-1).length()-1));
+                }else{
+                    if (currentGather.size()>1){
+                        currentGather.remove(currentGather.size());
+                    }
+                }
+                return;
+            }
+
+            if (KeyEvent.getKeyText(e.getKeyCode()).equals("ENTER")){
+                currentGather.add("");
+                return;
+            }
+
+            if ((int)e.getKeyChar() == 65535) {
+                return;
+            }
+            currentGather.set(currentGather.size()-1, currentGather.get(currentGather.size()-1)+e.getKeyChar());
+        }
+
     }
 
     @Override
@@ -50,6 +109,9 @@ public class KeyInput implements KeyListener {
                 pressedKeys[1].set(i, false);
                 break;
             }
+        }
+        if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+            ctrlPressed = false;
         }
     }
 
@@ -65,20 +127,24 @@ public class KeyInput implements KeyListener {
         pressedKeys[1].add(false);
         return new Trigger(()->checkKeyPressed(key));
     }
-    public BooleanSupplier isKeyPressed(String key){
+
+    public void beginCheck(String key){
         if (pressedKeys[0].contains(key)){
-            return ()->checkKeyPressed(key);
+            return;
         }
         pressedKeys[0].add(key);
         pressedKeys[1].add(false);
-        return ()->checkKeyPressed(key);
     }
 
-    public String systemInput(String enterMessage){
-        Scanner scanner = new Scanner(System.in);
-        System.out.print(enterMessage);
-        String inputString = scanner.nextLine();
-        scanner.close();
-        return inputString;
+    public void beginGatherAll(){
+        isGathering = true;
+    }
+
+    public List<String> getCurrentGather(){
+        return currentGather;
+    }
+
+    public void endGatherAll(){
+        isGathering = false;
     }
 }

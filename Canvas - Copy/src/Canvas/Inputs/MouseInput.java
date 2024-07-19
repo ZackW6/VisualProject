@@ -10,15 +10,15 @@ import javax.swing.event.MouseInputAdapter;
 
 import Canvas.Commands.Trigger;
 import Canvas.Shapes.VisualJ;
+import Canvas.Util.Vector2D;
 
 public class MouseInput{
 
-    private VisualJ canvas;
-
-    public int[] mouseCoords = new int[2];
+    public Vector2D mouseCoords = new Vector2D(0, 0);
     public double mouseWheel = 0;
     public boolean leftPressed = false;
     public boolean rightPressed = false;
+
     public enum MouseInputs {
         MOUSE_PRESSED(0),
         MOUSE_RELEASED(1),
@@ -49,6 +49,7 @@ public class MouseInput{
     }
     @SuppressWarnings("unchecked")
     private ArrayList<Runnable>[][] events = new ArrayList[2][8];
+    
     /**
      * Mouse side should be left for any that are not intended to moniter clicks
      * @param run
@@ -58,14 +59,16 @@ public class MouseInput{
     public void addEvent(Runnable run, MouseInputs typeOfListener, MouseSide rightOrLeft){
         events[rightOrLeft.get()][typeOfListener.get()].add(run);
     }
+
     public ArrayList<Runnable> getEventList(MouseInputs typeOfListener, MouseSide rightOrLeft){
         return events[rightOrLeft.get()][typeOfListener.get()];
     }
+
     public void removeEvent(Runnable run, MouseInputs typeOfListener, MouseSide rightOrLeft){
         events[rightOrLeft.get()][typeOfListener.get()].remove(run);
     }
+
     public MouseInput(VisualJ canvas){
-        this.canvas = canvas;
         for (int i = 0; i<events.length;i++){
             for (int y = 0; y<events[i].length;y++){
                 events[i][y] = new ArrayList<Runnable>();
@@ -147,8 +150,8 @@ public class MouseInput{
         canvas.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e){
-                mouseCoords[0] = e.getX();
-                mouseCoords[1] = e.getY();
+                mouseCoords.x = e.getX();
+                mouseCoords.y = e.getY();
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     
                     for (Runnable run : events[0][6].toArray(new Runnable[events[0][6].size()])){
@@ -163,16 +166,15 @@ public class MouseInput{
             }
             @Override
             public void mouseMoved(MouseEvent e){
-                mouseCoords[0] = e.getX();
-                mouseCoords[1] = e.getY();
+                mouseCoords.x = e.getX();
+                mouseCoords.y = e.getY();
                 for (Runnable run : events[0][7]){
                     run.run();
                 }
             }
         });
-        this.canvas=canvas;
     }
-    public int[] getMouseCoords() {
+    public Vector2D getMouseCoords() {
         return mouseCoords;
     }
     public double getMouseWheelPosition(){

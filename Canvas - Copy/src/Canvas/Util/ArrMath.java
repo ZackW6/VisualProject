@@ -28,4 +28,23 @@ public class ArrMath {
       }
       return z;
     }
+
+    public static double[] intToDoubleArray(int[] arr) {
+        double[] temp = new double[arr.length];
+
+        for (int i = 0; i < arr.length; i++) {
+            temp[i] = arr[i];
+        }
+        return temp;
+    }
+    
+    public static int[] doubleToIntArray(double[] arr) {
+        int[] temp = new int[arr.length];
+
+        for (int i = 0; i < arr.length; i++) {
+            temp[i] = (int)arr[i];
+        }
+
+        return temp;
+    }
 }

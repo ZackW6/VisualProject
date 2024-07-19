@@ -3,7 +3,7 @@ import java.awt.*;
 
 public class Oval extends Obj{
     public Oval(int X,int Y,int Width,int Length, Color Color,boolean tf){   
-        super("Oval",X,Y,Width,Length,Color,tf);
+        super(X,Y,Width,Length,Color,tf);
     }
     /**
      * Set width of the oval

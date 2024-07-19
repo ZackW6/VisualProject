@@ -2,12 +2,11 @@ package Canvas.Shapes;
 import java.awt.*;
 import java.awt.Rectangle;
 
-import Canvas.Shapes.PhysicsObjects.Vector2D;
+import Canvas.Util.Vector2D;
 /**
  * Base class for all shapes of the library
  */
 public abstract class Obj{
-    protected String type;
     protected Vector2D coords = new Vector2D(0, 0);
     protected double width;
     protected double length;
@@ -19,7 +18,6 @@ public abstract class Obj{
     protected double degrees2=0;
     /**
      * Base class public for the Obj class, not meant to be implimented 
-     * @param type
      * @param xcoord
      * @param ycoord
      * @param width
@@ -27,8 +25,7 @@ public abstract class Obj{
      * @param col
      * @param fill
      */
-    protected Obj(String type,double xcoord,double ycoord,int width, int length,Color col,boolean fill){
-        this.type=type;
+    protected Obj(double xcoord,double ycoord,double width, double length,Color col,boolean fill){
         this.coords.x=xcoord;
         this.coords.y=ycoord;
         this.col=col;
@@ -77,10 +74,6 @@ public abstract class Obj{
         }
         return -1;
     }
-    protected Object[] objectInformation(){
-        return new Object[]{0,0};
-    }
-
 
     /**
      * Change whether or not the shape is filled
@@ -89,6 +82,7 @@ public abstract class Obj{
     public void changeFill(boolean fillOrNo){
         this.fill=fillOrNo;
     }
+
     /**
      * Rotate the shape around a certain point, will not rotate around self
      * @param x
@@ -112,6 +106,7 @@ public abstract class Obj{
         this.coords.x=x;
         this.coords.y=y;
     }
+
     /**
      * Set the current color of the shape
      * @param newCol
@@ -124,9 +119,7 @@ public abstract class Obj{
      * Should not be called directly from Obj class
      * @param g2dBuffer
      */
-    public void show(Graphics2D g2dBuffer){
-
-    }
+    public abstract void show(Graphics2D g2dBuffer);
 
     public Vector2D getCoords(){
         return coords;

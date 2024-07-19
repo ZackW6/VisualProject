@@ -24,13 +24,11 @@ import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.Square;
 import Canvas.Shapes.Text;
 import Canvas.Shapes.VisualJ;
-import Canvas.Shapes.PhysicsObjects.Arrow;
-import Canvas.Shapes.PhysicsObjects.Particle;
-import Canvas.Shapes.PhysicsObjects.StaticSquare;
-import Canvas.Shapes.PhysicsObjects.Vector2D;
 import Canvas.Util.ColorEXT;
 import Canvas.Util.Profile;
 import Canvas.Util.Random;
+import Canvas.Util.Vector2D;
+
 public class App {
     public static VisualJ vis = null;
     public static MouseInput mouse = null;
@@ -39,27 +37,22 @@ public class App {
     public static Profile profile = new Profile();
     public static Text graphicsFR = new Text(100, 120, 15, Color.RED, "");
     public static Text physicsFR = new Text(100, 140, 15, Color.RED, "");
+
+    public static double textSize = 10000;
     public static void main(String[] args) {
         
         vis = new VisualJ("Simulation",1700,900,Color.black);
         mouse = new MouseInput(vis);
         keyboard = new KeyInput(vis);
         
-        String path = keyboard.systemInput("input your path here: ");
-
-        FileWriter fileWriter = new FileWriter(path);
-        fileWriter.deleteFile("newFile");
-        
         vis.startThread();
         defineShapes(vis);
-       
+        
         CommandBase runner = Commands.timed(()->runAll(vis), 10);
         runner.schedule();
-        CommandBase print = Commands.timed(()->{System.out.println("HI");},500).startWith(()->{System.out.println("Start");}).finallyDo(()->{System.out.println("HERE");});
-        keyboard.keyPressed("a").onTrue(print);
-        keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
-            print.cancel();
-        }));
+
+        mouse.addEvent(()->keyboard.beginGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.LEFT);
+        mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
     }
 
     public static void runAll(VisualJ vis){
@@ -68,12 +61,14 @@ public class App {
         ArrayList<Obj> shapes = vis.getObjArray();
         for (int i=0;i<shapes.size();i++){
             if (shapes.get(i)!=null){
-                shapes.get(i).rotate(1+shapes.get(i).getDegree());
+                System.out.println(new Text(0, 0, textSize, Color.RED, "HI THERE").getWidth()+"    "+new Text(0, 0, textSize, Color.RED, "HI THERE").getLength());
+                // shapes.get(i).rotate(1+shapes.get(i).getDegree());
             }
         }
         profile.stop();
     }
     public static void defineShapes(VisualJ vis){
+        
         for (int i=0;i<10;i++){
             int x = Random.randInt(0, vis.WIDTH);
             int y = Random.randInt(0, vis.HEIGHT);
@@ -86,5 +81,6 @@ public class App {
             vis.add(new Circle(x+nx, y+ny, 5, Color.RED, true));
             // vis.add(new Oval(x,y, 100,200,ColorEXT.getRandomColor(),true));
         }
+        vis.add(new Text(40, 80, textSize, Color.RED, "HI THERE"));
     }
 }
