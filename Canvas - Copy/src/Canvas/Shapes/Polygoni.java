@@ -2,109 +2,129 @@ package Canvas.Shapes;
 import java.awt.*;
 import java.awt.Polygon;
 import java.awt.image.AbstractMultiResolutionImage;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import javax.swing.text.View;
 
 import Canvas.Util.ArrMath;
+import Canvas.Util.Vector2D;
 
 public abstract class Polygoni extends Obj{
-    protected double[] xcoords;
-    protected double[] ycoords;
-    public Polygoni(String type,double X,double Y,double[] arrintx,double[] arrinty, Color Color,boolean tf){
+
+    protected CopyOnWriteArrayList<Vector2D> points;
+    private Vector2D translationVector;
+
+
+    public Polygoni(double X,double Y,double[] arrintx,double[] arrinty, Color Color,boolean tf){
         super(X,Y,0,0,Color,tf);
-        this.xcoords=arrintx;
-        this.ycoords=arrinty;
-        double greatx=arrintx[0];
-        double greaty=arrinty[0];
-        for (int i=1;i<this.xcoords.length;i++){
-            if (this.xcoords[i]>greatx){
-                greatx=this.xcoords[i];
-            }
-            if (this.ycoords[i]>greaty){
-                greaty=this.ycoords[i];
-            }
+
+        CopyOnWriteArrayList<Vector2D> points = new CopyOnWriteArrayList<>();
+        for (int i = 0; i < arrintx.length; i++){
+            points.add(Vector2D.of(arrintx[i],arrinty[i]));
         }
-
-        this.width=greatx;
-        this.length=greaty;
-    }
-    public Polygoni(String type, double X, double Y,int[] arrintx,int[] arrinty, Color Color,boolean tf){
-        super(X,Y,0,0,Color,tf);
-        this.xcoords = ArrMath.intToDoubleArray(arrintx);
-        this.ycoords = ArrMath.intToDoubleArray(arrinty);
-        double greatx = arrintx[0];
-        double greaty = arrinty[0];
-        for (int i=1;i<this.xcoords.length;i++){
-            if (this.xcoords[i]>greatx){
-                greatx = this.xcoords[i];
-            }
-            if (this.ycoords[i]>greaty){
-                greaty = this.ycoords[i];
-            }
-        }
-
-        this.width=greatx;
-        this.length=greaty;
-    }
-
-    public void resetPolygon(){
         
+        recheck(points);
     }
-    
-    /**
-     * Add a vertex to the current polygon
-     * @param index where to add the vertex
-     * @param x
-     * @param y
-     */
-    public void addVertex(int index, double x, double y){
-        double[] arrx=new double[xcoords.length+1];
-        double[] arry=new double[xcoords.length+1];
 
-        for (int i=0;i<arrx.length;i++){
-            if (i==index){
-                arrx[i]=x;
-                arry[i]=y;
-                i++;
-            }else{
-                arrx[i]=this.xcoords[i];
-                arry[i]=this.ycoords[i];
+    public Polygoni(double X, double Y, List<Vector2D> points, Color Color,boolean tf){
+        super(X,Y,0,0,Color,tf);
+
+        recheck(new CopyOnWriteArrayList<>(points.toArray(new Vector2D[points.size()])));
+    }
+
+    protected void recheck(List<Vector2D> points){
+        this.points = (CopyOnWriteArrayList<Vector2D>) points;
+        Vector2D dimensions = getDimensions(points);
+
+        this.translationVector = getTranslation(points);
+        this.width = dimensions.x;
+        this.height = dimensions.y;
+    }
+
+    private Vector2D getDimensions(List<Vector2D> points){
+        double greatx = points.get(0).x;
+        double greaty = points.get(0).y;
+        double leastx = points.get(0).x;
+        double leasty = points.get(0).y;
+        for (int i = 1; i < points.size(); i++){
+            if (points.get(i).x < leastx){
+                leastx = points.get(i).x;
+            }
+            if (points.get(i).x > greatx){
+                greatx = points.get(i).x;
+            }
+            if (points.get(i).y < leasty){
+                leasty = points.get(i).y;
+            }
+            if (points.get(i).y > greaty){
+                greaty = points.get(i).y;
             }
         }
-        this.xcoords=arrx;
-        this.ycoords=arry;
+        double width = greatx - leastx;
+        double height = greaty - leasty;
+        return Vector2D.of(width, height);
     }
-    /**
-     * change the vertex of any index point
-     * @param indexOfPoint
-     * @param x
-     * @param y
-     */
-    public void changeVertexPos(int indexOfPoint, double x, double y){
-        this.xcoords[indexOfPoint]=x;
-        this.ycoords[indexOfPoint]=y;
 
+    private Vector2D getTranslation(List<Vector2D> points){
+        double greatx = points.get(0).x;
+        double greaty = points.get(0).y;
+        double leastx = points.get(0).x;
+        double leasty = points.get(0).y;
+        for (int i = 1; i < points.size(); i++){
+            if (points.get(i).x < leastx){
+                leastx = points.get(i).x;
+            }
+            if (points.get(i).x > greatx){
+                greatx = points.get(i).x;
+            }
+            if (points.get(i).y < leasty){
+                leasty = points.get(i).y;
+            }
+            if (points.get(i).y > greaty){
+                greaty = points.get(i).y;
+            }
+        }
+        double width = (greatx + leastx)/2;
+        double height = (greaty + leasty)/2;
+        return Vector2D.of(width, height);
     }
+
+    public Vector2D getTranslationVector(){
+        return translationVector;
+    }
+
+    public List<Vector2D> getPoints(){
+        return points;
+    }
+
     /**
      * The Polygon application of the show method, draws a Polygon based on instance data
      */
     @Override
     public void show(Graphics2D g2dBuffer){
-        int[] arrintx=ArrMath.doubleToIntArray(this.xcoords);
-        int[] arrinty=ArrMath.doubleToIntArray(this.ycoords);
+
+        int[] arrintx = new int[points.size()];
+        int[] arrinty = new int[points.size()];
+        for (int i = 0; i < points.size(); i++){
+            arrintx[i] = (int)points.get(i).x;
+            arrinty[i] = (int)points.get(i).y;
+        }
         int[] z=new int[arrintx.length];
         int[] a=new int[arrinty.length];
+        
+        for (int y=0;y<arrintx.length;y++){
+            z[y]=(int) -translationVector.x;
+            a[y]=(int) -translationVector.y;
+        }
         int[] b=ArrMath.addArrs(arrintx,z);
         int[] c=ArrMath.addArrs(arrinty,a);
-        for (int y=0;y<arrintx.length;y++){
-            z[y]=(int)-width/2;
-            a[y]=(int)-length/2;
-        }
+
         if (fill){
             g2dBuffer.fillPolygon(b,c,arrintx.length);
-            
         }else{
             g2dBuffer.drawPolygon(b,c,arrintx.length);
         }
-        z=ArrMath.minusArrs(arrintx,z);
-        a=ArrMath.minusArrs(arrinty,a);
     }
 }

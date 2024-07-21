@@ -9,40 +9,39 @@ import Canvas.Util.Vector2D;
 public abstract class Obj{
     protected Vector2D coords = new Vector2D(0, 0);
     protected double width;
-    protected double length;
+    protected double height;
     protected Color col;
-    protected double degree=0;
+    protected double degree = 0;
     protected boolean fill;
-    protected double xxcoord;
-    protected double xycoord;
-    protected double degrees2=0;
+    protected Vector2D addedCoords = new Vector2D(0, 0);
+    protected double degree2 = 0;
+
     /**
-     * Base class public for the Obj class, not meant to be implimented 
+     * Base class public for the Obj class, not meant to be implimented
      * @param xcoord
      * @param ycoord
      * @param width
-     * @param length
+     * @param height
      * @param col
      * @param fill
      */
-    protected Obj(double xcoord,double ycoord,double width, double length,Color col,boolean fill){
+    protected Obj(double xcoord,double ycoord,double width, double height,Color col,boolean fill){
         this.coords.x=xcoord;
         this.coords.y=ycoord;
         this.col=col;
         this.width=width;
-        this.length=length;
+        this.height=height;
         this.fill=fill;
     }
+
     /**
      * Rotate based on center
      * @param rotateDegree
      */
     public void rotate(double rotateDegree){
-        while (rotateDegree>=360){
-            rotateDegree-=360;
-        }
         this.degree=rotateDegree;
     }
+
     /**
      * Add on to current x and y
      * @param moveX
@@ -56,23 +55,9 @@ public abstract class Obj{
     public double getDegree(){
         return degree;
     }
-    public double getRotPointDegree(){
-        return degrees2;
-    }
-    
 
-    /**
-     * Return the index of this object in the array
-     * @param x
-     * @return
-     */
-    public int getIndex(Obj[] x){
-        for (int i=0;i<x.length;i++){
-            if (x[i].equals(this)){
-                return i;
-            }
-        }
-        return -1;
+    public double getRotPointDegree(){
+        return degree2;
     }
 
     /**
@@ -90,11 +75,11 @@ public abstract class Obj{
      * @param deg
      */
     public void rotPoint(double x, double y, double deg){
-        degrees2=deg;
-        double radius=Math.sqrt(Math.pow(x-(coords.x+width/2),2)+Math.pow(y-(coords.y+length/2),2));
-        double curRad = Math.toDegrees(Math.atan2((coords.y+length/2) - y, (coords.x+width/2) - x));
-        xxcoord=(int)(x+radius*Math.cos(Math.toRadians(degrees2+curRad)))-(int)coords.x-width/2;
-        xycoord=(int)(y+radius*Math.sin(Math.toRadians(degrees2+curRad)))-(int)coords.y-length/2;
+        this.degree2=deg;
+        double radius = Math.sqrt(Math.pow(x-(coords.x+width/2),2)+Math.pow(y-(coords.y+height/2),2));
+        double curRad = Math.toDegrees(Math.atan2((coords.y+height/2) - y, (coords.x+width/2) - x));
+        addedCoords.x = (int)(x+radius*Math.cos(Math.toRadians(degree2+curRad)))-(int)coords.x-width/2;
+        addedCoords.y = (int)(y+radius*Math.sin(Math.toRadians(degree2+curRad)))-(int)coords.y-height/2;
     }
 
     /**
@@ -116,7 +101,6 @@ public abstract class Obj{
     }
 
     /**
-     * Should not be called directly from Obj class
      * @param g2dBuffer
      */
     public abstract void show(Graphics2D g2dBuffer);
@@ -129,7 +113,7 @@ public abstract class Obj{
         return width;
     }
 
-    public double getLength(){
-        return length;
+    public double getHeight(){
+        return height;
     }
 }

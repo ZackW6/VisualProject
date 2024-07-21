@@ -1,14 +1,41 @@
 package Canvas.Shapes;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import Canvas.Util.ArrMath;
+import Canvas.Util.Vector2D;
 
 public class Line extends Polygoni{
-    public Line(int X,int Y,double[] arrintx,double[] arrinty, Color Color,int LineWidth){
-        super("Line",X,Y,arrintx,arrinty,Color,true);
+
+    private Vector2D[] ends = new Vector2D[2];
+    private double lineWidth = 0;
+
+    public Line(double X,double Y,double[] arrintx,double[] arrinty, Color Color,double LineWidth){
+        super(X,Y,arrintx,arrinty,Color,true);
+        this.lineWidth = LineWidth;
         remakeLine(arrintx, arrinty, LineWidth);
+        ends[0] = Vector2D.of(arrintx[0],arrinty[0]);
+        ends[1] = Vector2D.of(arrintx[1],arrinty[1]);
     }
-    public Line(int X,int Y,int[] arrintx,int[] arrinty, Color Color,int LineWidth){   
-        super("Line",X,Y,arrintx,arrinty,Color,true);
-        remakeLine(arrintx, arrinty, LineWidth);
+
+    public Line(double X,double Y,List<Vector2D> points, Color Color,double LineWidth){
+        super(X,Y,points,Color,true);
+        this.lineWidth = LineWidth;
+        remakeLine(points, LineWidth);
+        ends[0] = points.get(0);
+        ends[1] = points.get(1);
+    }
+
+    private void remakeLine(List<Vector2D> points, double lineWidth) {
+        double[] arrintx = new double[2];
+        double[] arrinty = new double[2];
+        for (int i = 0; i < 2; i++){
+            arrintx[i] = points.get(i).x;
+            arrinty[i] = points.get(i).y;
+        }
+        remakeLine(arrintx, arrinty, lineWidth);
     }
 
     private void remakeLine(double[] arrintx, double[] arrinty, double LineWidth){
@@ -20,41 +47,40 @@ public class Line extends Polygoni{
         }
         double perpendicular = -1.0/(slope+0.00000000001);
 
-        double[] newx=new double[4];
-        double[] newy=new double[4];
-
         double movex = Math.sqrt((Math.pow(LineWidth/2,2))/(1+Math.pow(perpendicular,2)));
         double movey = movex * perpendicular;
 
-        newx[0]=(arrintx[0]+movex);
-        newy[0]=(arrinty[0]+movey);
-        newx[1]=(arrintx[0]-movex);
-        newy[1]=(arrinty[0]-movey);
-        newx[2]=(arrintx[1]-movex);
-        newy[2]=(arrinty[1]-movey);
-        newx[3]=(arrintx[1]+movex);
-        newy[3]=(arrinty[1]+movey);
-        this.xcoords=newx;
-        this.ycoords=newy;
-    }
-    private void remakeLine(int[] arrintx, int[] arrinty, int LineWidth){
-        double[] newx = intToDoubleArray(arrintx);
-        double[] newy = intToDoubleArray(arrinty);
-        remakeLine(newx, newy, (double)LineWidth);
-    }
+        points.clear();
+        points.add(Vector2D.of(0,0));
+        points.add(Vector2D.of(0,0));
+        points.add(Vector2D.of(0,0));
+        points.add(Vector2D.of(0,0));
 
-    public static double[] intToDoubleArray(int[] arr) {
-        double[] temp = new double[arr.length];
-
-        for (int i = 0; i < arr.length; i++) {
-            temp[i] = arr[i];
-        }
-        return temp;
+        points.get(0).x = (arrintx[0]+movex);
+        points.get(0).y = (arrinty[0]+movey);
+        points.get(1).x = (arrintx[0]-movex);
+        points.get(1).y = (arrinty[0]-movey);
+        points.get(2).x = (arrintx[1]-movex);
+        points.get(2).y = (arrinty[1]-movey);
+        points.get(3).x = (arrintx[1]+movex);
+        points.get(3).y = (arrinty[1]+movey);
     }
     
-    @Override
-    public void changeVertexPos(int indexOfPoint, double x, double y){
-        this.xcoords[indexOfPoint]=x;
-        this.ycoords[indexOfPoint]=y;
+    public void setVertexPos(int indexOfPoint, double x, double y){
+        ends[indexOfPoint] = Vector2D.of(x, y);
+        remakeLine(List.of(ends), this.lineWidth);
+    }
+
+    public void setLineWidth(double lineWidth){
+        this.lineWidth = lineWidth;
+        remakeLine(List.of(ends), this.lineWidth);
+    }
+
+    public double getLineWidth(){
+        return lineWidth;
+    }
+
+    public List<Vector2D> vertices(){
+        return List.of(ends);
     }
 }

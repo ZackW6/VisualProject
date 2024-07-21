@@ -3,6 +3,7 @@ import javax.swing.*;
 
 import Canvas.Inputs.UserInput;
 import Canvas.Util.Profile;
+import Canvas.Util.Vector2D;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,8 +23,7 @@ public class VisualJ extends JFrame{
 
     private BufferedImage buffer;
 
-    private int moveX = 0;
-    private int moveY = 0;
+    private Vector2D moveScreen = new Vector2D(0, 0);
     private double timeStep;
     private double lastIterationTime = 0;
     @Override
@@ -36,23 +36,23 @@ public class VisualJ extends JFrame{
         }
         // Get the graphics context of the buffer
         Graphics2D g2dBuffer = buffer.createGraphics();
-        g2dBuffer.translate(moveX,moveY);
+        g2dBuffer.translate(moveScreen.x,moveScreen.y);
         g2dBuffer.setColor(getBackground());
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
         try {
             for (int i = 0; i < shapes.size(); i++) {
                 if (shapes.get(i)!=null){
-                    double xp=shapes.get(i).coords.x+shapes.get(i).xxcoord;
-                    double yp=shapes.get(i).coords.y+shapes.get(i).xycoord;
+                    double xp=shapes.get(i).coords.x+shapes.get(i).addedCoords.x;
+                    double yp=shapes.get(i).coords.y+shapes.get(i).addedCoords.y;
                     double radians=(Math.toRadians(shapes.get(i).degree));
                     double rotX=xp+shapes.get(i).width/2;
-                    double rotY=yp+shapes.get(i).length/2;
+                    double rotY=yp+shapes.get(i).height/2;
                     g2dBuffer.setColor(shapes.get(i).col);
-                    g2dBuffer.translate(rotX,rotY);
+                    g2dBuffer.translate((int)rotX,(int)rotY);
                     g2dBuffer.rotate(radians);
                     shapes.get(i).show(g2dBuffer);
                     g2dBuffer.rotate(-radians);
-                    g2dBuffer.translate(-rotX,-rotY);
+                    g2dBuffer.translate((int)-rotX,(int)-rotY);
                 }
             }
         } catch (Exception e) {
@@ -65,6 +65,7 @@ public class VisualJ extends JFrame{
         profile.stop();
         timeStep++;
     }
+
     public void createWorld(String title,int width, int height,Color color){
         setTitle(title);
         setSize(width, height);
@@ -72,6 +73,7 @@ public class VisualJ extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         buffer = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
     }
+
     /**
      * Get the array of objects currently being presented
      * @return
@@ -79,6 +81,7 @@ public class VisualJ extends JFrame{
     public ArrayList<Obj> getObjArray(){
         return shapes;
     }
+
     /**
      * Remove an object from the current array of objects
      * @param object
@@ -86,6 +89,7 @@ public class VisualJ extends JFrame{
     public void remove(Obj object){
         shapes.remove(object);
     }
+
     /**
      * Add an object to the current array of objects
      * @param object
@@ -93,6 +97,7 @@ public class VisualJ extends JFrame{
     public void add(Obj object){
         shapes.add(object);
     }
+
     /**
      * Start the graphics thread, which runs as fast as possible
      */
@@ -115,6 +120,7 @@ public class VisualJ extends JFrame{
     public int getBackgroundHeight(){
         return HEIGHT;
     }
+
     public int getBackgroundWidth(){
         return WIDTH;
     }
@@ -135,16 +141,19 @@ public class VisualJ extends JFrame{
     }
 
     public void moveFrame(int x, int y){
-        moveX += x;
-        moveY += y;
+        moveScreen.x += x;
+        moveScreen.y += y;
     }
+
     public void setFrame(int x, int y){
-        moveX = x;
-        moveY = y;
+        moveScreen.x = x;
+        moveScreen.y = y;
     }
-    public int[] getFrameMove(){
-        return new int[]{moveX,moveY};
+
+    public Vector2D getFrameMove(){
+        return moveScreen;
     }
+
     public boolean moveIndex(Obj object, int index){
         int currentIndex = shapes.indexOf(object);
         if (currentIndex==-1){
@@ -155,6 +164,11 @@ public class VisualJ extends JFrame{
         shapes.set(currentIndex, temp);
         return true;
     }
+
+    public int getIndex(Obj object){
+        return shapes.indexOf(object);
+    }
+
     public double getIterationTime(){
         return lastIterationTime;
     }

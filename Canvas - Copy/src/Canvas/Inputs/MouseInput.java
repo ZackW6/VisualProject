@@ -174,21 +174,27 @@ public class MouseInput{
             }
         });
     }
+    
     public Vector2D getMouseCoords() {
         return mouseCoords;
     }
+
     public double getMouseWheelPosition(){
         return mouseWheel;
     }
+
     public boolean isLeftMousePressed(){
         return leftPressed;
     }
+
     public boolean isRightMousePressed(){
         return rightPressed;
     }
+
     public Trigger leftPressed(){
         return new Trigger(()->isLeftMousePressed());
     }
+
     public Trigger rightPressed(){
         return new Trigger(()->isRightMousePressed());
     }

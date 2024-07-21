@@ -8,6 +8,10 @@ public class Vector2D {
         this.y = y;
     }
 
+    public static Vector2D of(double x, double y){
+        return new Vector2D(x, y);
+    }
+
     public Vector2D add(Vector2D other) {
         return new Vector2D(this.x + other.x, this.y + other.y);
     }

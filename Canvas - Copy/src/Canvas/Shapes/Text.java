@@ -12,10 +12,12 @@ public class Text extends Obj{
 
     public Text(double X,double Y,double Height, Color Color,String text){
 
-        super(X,Y,predictSize(text, fixFontHeight(Height,new Font("Arial", Font.BOLD, (int)Height))).x
-        ,predictSize(text,fixFontHeight(Height,new Font("Arial", Font.BOLD, (int)Height))).y,Color,false);
+        super(X,Y,0,0,Color,false);
+
+        this.str = text;
 
         setFont(fixFontHeight(Height,new Font("Arial", Font.BOLD, (int)Height)));
+        recheck();
     }
 
     /**
@@ -25,7 +27,7 @@ public class Text extends Obj{
      * @param fontSize
      */
     public void setFont(String fontType, int styleType, double fontSize){
-        font = fixFontHeight(fontSize, new Font(fontType, styleType, (int)fontSize));
+        this.font = fixFontHeight(fontSize, new Font(fontType, styleType, (int)fontSize));
 
         recheck();
     }
@@ -52,8 +54,8 @@ public class Text extends Obj{
     private void recheck(){
         Canvas c = new Canvas();
         FontMetrics fontMetrics = c.getFontMetrics(font);
-        this.width=fontMetrics.stringWidth(this.str);
-        this.length=fontMetrics.getHeight();
+        this.width = fontMetrics.stringWidth(this.str);
+        this.height = fontMetrics.getHeight();
     }
     
     /**
@@ -91,8 +93,8 @@ public class Text extends Obj{
 
     private static Font fixFontHeight(double desiredHeight, Font font){
         Font fixedFont = font;
-        if ((int)desiredHeight < predictHeight(fixedFont)){
-            while((int)desiredHeight < predictHeight(fixedFont)){
+        if ((int)desiredHeight > predictHeight(fixedFont)){
+            while((int)desiredHeight > predictHeight(fixedFont)){
                 fixedFont = new Font(fixedFont.getFontName(), fixedFont.getStyle(),fixedFont.getSize()+1);
             }
             if ((int)desiredHeight == predictHeight(fixedFont)){
@@ -100,7 +102,7 @@ public class Text extends Obj{
             }
             return new Font(fixedFont.getFontName(), fixedFont.getStyle(),fixedFont.getSize()-1);
         }else{
-            while((int)desiredHeight > predictHeight(fixedFont)){
+            while((int)desiredHeight < predictHeight(fixedFont)){
                 fixedFont = new Font(fixedFont.getFontName(), fixedFont.getStyle(),fixedFont.getSize()-1);
             }
             if ((int)desiredHeight == predictHeight(fixedFont)){
@@ -115,26 +117,10 @@ public class Text extends Obj{
      */
     @Override
     public void show(Graphics2D g2dBuffer){
-        int xp=(int)coords.x+(int)xxcoord;
-        //System.out.println(shapes[i].xxcoord);
-        int yp=(int)coords.y+(int)xycoord;
-        double radians=(Math.toRadians(degree));
-        int rotX=xp+(int)width/2;
-        int rotY=yp+(int)length/2;
-        int xtra=-(int)width/2;
-        int ytra=-(int)length/2;                        
-                                  
-        g2dBuffer.rotate(-radians);
-        g2dBuffer.translate(-rotX,-rotY);
-        g2dBuffer.translate(rotX,yp+length/2);
-        g2dBuffer.rotate(radians);
-        
+        double xtra = -width/2;
+        double ytra = height/4;
+
         g2dBuffer.setFont(this.getFont());
-        g2dBuffer.drawString(this.str,xtra,ytra);
-        
-        g2dBuffer.rotate(-radians);
-        g2dBuffer.translate(-rotX,-yp-length/2);
-        g2dBuffer.translate(rotX,rotY);
-        g2dBuffer.rotate(radians);
+        g2dBuffer.drawString(this.str,(int)xtra,(int)ytra);
     }
 }
