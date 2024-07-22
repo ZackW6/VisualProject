@@ -132,7 +132,7 @@ public class MouseInput{
             }
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
-                mouseWheel=e.getPreciseWheelRotation();
+                mouseWheel = e.getPreciseWheelRotation();
                 for (Runnable run : events[0][5].toArray(new Runnable[events[0][5].size()])){
                     run.run();
                 }
@@ -141,7 +141,7 @@ public class MouseInput{
         canvas.addMouseWheelListener(new MouseInputAdapter() {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e){
-                mouseWheel=e.getPreciseWheelRotation();
+                mouseWheel = e.getPreciseWheelRotation();
                 for (Runnable run : events[0][5].toArray(new Runnable[events[0][5].size()])){
                     run.run();
                 }
@@ -174,9 +174,9 @@ public class MouseInput{
             }
         });
     }
-    
+
     public Vector2D getMouseCoords() {
-        return mouseCoords;
+        return Vector2D.of(mouseCoords.x, mouseCoords.y);
     }
 
     public double getMouseWheelPosition(){

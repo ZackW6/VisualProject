@@ -103,7 +103,7 @@ public abstract class Obj{
     /**
      * @param g2dBuffer
      */
-    public abstract void show(Graphics2D g2dBuffer);
+    public abstract void show(Graphics2D g2dBuffer, double zoomRatio);
 
     public Vector2D getCoords(){
         return coords;

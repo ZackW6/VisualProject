@@ -23,7 +23,8 @@ public class VisualJ extends JFrame{
 
     private BufferedImage buffer;
 
-    private Vector2D moveScreen = new Vector2D(0, 0);
+    private double zoomRatio = 1;
+    private Vector2D moveScreen;
     private double timeStep;
     private double lastIterationTime = 0;
     @Override
@@ -36,21 +37,22 @@ public class VisualJ extends JFrame{
         }
         // Get the graphics context of the buffer
         Graphics2D g2dBuffer = buffer.createGraphics();
-        g2dBuffer.translate(moveScreen.x,moveScreen.y);
+        
         g2dBuffer.setColor(getBackground());
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
+        g2dBuffer.translate(WIDTH/2,HEIGHT/2);
         try {
             for (int i = 0; i < shapes.size(); i++) {
                 if (shapes.get(i)!=null){
-                    double xp=shapes.get(i).coords.x+shapes.get(i).addedCoords.x;
-                    double yp=shapes.get(i).coords.y+shapes.get(i).addedCoords.y;
+                    double xp = (moveScreen.x + shapes.get(i).coords.x + shapes.get(i).addedCoords.x)*zoomRatio;
+                    double yp = (moveScreen.y + shapes.get(i).coords.y + shapes.get(i).addedCoords.y)*zoomRatio;
                     double radians=(Math.toRadians(shapes.get(i).degree));
-                    double rotX=xp+shapes.get(i).width/2;
-                    double rotY=yp+shapes.get(i).height/2;
+                    double rotX=xp+(shapes.get(i).width/2)*zoomRatio;
+                    double rotY=yp+(shapes.get(i).height/2)*zoomRatio;
                     g2dBuffer.setColor(shapes.get(i).col);
                     g2dBuffer.translate((int)rotX,(int)rotY);
                     g2dBuffer.rotate(radians);
-                    shapes.get(i).show(g2dBuffer);
+                    shapes.get(i).show(g2dBuffer, zoomRatio);
                     g2dBuffer.rotate(-radians);
                     g2dBuffer.translate((int)-rotX,(int)-rotY);
                 }
@@ -127,7 +129,8 @@ public class VisualJ extends JFrame{
 
     public VisualJ(String title,int width, int height, Color background){
         WIDTH=width;
-        HEIGHT=height; 
+        HEIGHT=height;
+        moveScreen = new Vector2D(0, 0);
         SwingUtilities.invokeLater(() -> setVisible(true));
         setTitle(title);
         setSize(width, height);
@@ -140,18 +143,29 @@ public class VisualJ extends JFrame{
         return timeStep;
     }
 
-    public void moveFrame(int x, int y){
+    public void moveFrame(double x, double y){
         moveScreen.x += x;
         moveScreen.y += y;
     }
 
-    public void setFrame(int x, int y){
+    public void setFrame(double x, double y){
         moveScreen.x = x;
         moveScreen.y = y;
     }
 
     public Vector2D getFrameMove(){
-        return moveScreen;
+        return Vector2D.of(moveScreen.x, moveScreen.y);
+    }
+
+    public void setZoom(double zoomRatio){
+        this.zoomRatio = zoomRatio;
+        if (this.zoomRatio < 0){
+            this.zoomRatio = 0;
+        }
+    }
+
+    public double getZoom(){
+        return zoomRatio;
     }
 
     public boolean moveIndex(Obj object, int index){

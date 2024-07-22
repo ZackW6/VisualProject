@@ -103,7 +103,7 @@ public abstract class Polygoni extends Obj{
      * The Polygon application of the show method, draws a Polygon based on instance data
      */
     @Override
-    public void show(Graphics2D g2dBuffer){
+    public void show(Graphics2D g2dBuffer, double zoomRatio){
 
         int[] arrintx = new int[points.size()];
         int[] arrinty = new int[points.size()];
@@ -120,6 +120,11 @@ public abstract class Polygoni extends Obj{
         }
         int[] b=ArrMath.addArrs(arrintx,z);
         int[] c=ArrMath.addArrs(arrinty,a);
+
+        for (int y=0;y<arrintx.length;y++){
+            b[y]=(int)(b[y]*zoomRatio);
+            c[y]=(int)(c[y]*zoomRatio);
+        }
 
         if (fill){
             g2dBuffer.fillPolygon(b,c,arrintx.length);

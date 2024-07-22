@@ -113,17 +113,16 @@ public class PolyShape extends Obj{
     }
     
     @Override
-    public void show(Graphics2D g2dBuffer) {
+    public void show(Graphics2D g2dBuffer, double zoomRatio) {
         for (int i = 0; i < shapes.size(); i++){
-            double xp=shapes.get(i).coords.x+shapes.get(i).addedCoords.x;
-            double yp=shapes.get(i).coords.y+shapes.get(i).addedCoords.y;
+            double xp=(shapes.get(i).coords.x+shapes.get(i).addedCoords.x)*zoomRatio;
+            double yp=(shapes.get(i).coords.y+shapes.get(i).addedCoords.y)*zoomRatio;
             double radians=(Math.toRadians(shapes.get(i).degree));
-            double rotX=xp+shapes.get(i).width/2;
-            double rotY=yp+shapes.get(i).height/2;
+
             g2dBuffer.setColor(shapes.get(i).col);
             g2dBuffer.translate((int)xp,(int)yp);
             g2dBuffer.rotate(radians);
-            shapes.get(i).show(g2dBuffer);
+            shapes.get(i).show(g2dBuffer, zoomRatio);
             g2dBuffer.rotate(-radians);
             g2dBuffer.translate((int)-xp,(int)-yp);
         }

@@ -116,11 +116,11 @@ public class Text extends Obj{
      * The Text application of the show method, draws a Text String based on instance data
      */
     @Override
-    public void show(Graphics2D g2dBuffer){
+    public void show(Graphics2D g2dBuffer, double zoomRatio){
         double xtra = -width/2;
         double ytra = height/4;
 
-        g2dBuffer.setFont(this.getFont());
-        g2dBuffer.drawString(this.str,(int)xtra,(int)ytra);
+        g2dBuffer.setFont(fixFontHeight(height*zoomRatio, this.getFont()));
+        g2dBuffer.drawString(this.str,(int)(xtra*zoomRatio),(int)(ytra*zoomRatio));
     }
 }
