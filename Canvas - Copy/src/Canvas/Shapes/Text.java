@@ -16,7 +16,7 @@ public class Text extends Obj{
 
         this.str = text;
 
-        setFont(fixFontHeight(Height,new Font("Arial", Font.BOLD, (int)Height)));
+        withFont(fixFontHeight(Height,new Font("Arial", Font.BOLD, (int)Height)));
         recheck();
     }
 
@@ -26,20 +26,22 @@ public class Text extends Obj{
      * @param styleType use already defined Font.BOLD or others
      * @param fontSize
      */
-    public void setFont(String fontType, int styleType, double fontSize){
+    public Text withFont(String fontType, int styleType, double fontSize){
         this.font = fixFontHeight(fontSize, new Font(fontType, styleType, (int)fontSize));
 
         recheck();
+        return this;
     }
 
     /**
      * 
      * @param font
      */
-    private void setFont(Font font){
+    private Text withFont(Font font){
         this.font = font;
 
         recheck();
+        return this;
     }
 
     public String getText(){
@@ -91,7 +93,7 @@ public class Text extends Obj{
         return font;
     }
 
-    private static Font fixFontHeight(double desiredHeight, Font font){
+    public static Font fixFontHeight(double desiredHeight, Font font){
         Font fixedFont = font;
         if ((int)desiredHeight > predictHeight(fixedFont)){
             while((int)desiredHeight > predictHeight(fixedFont)){

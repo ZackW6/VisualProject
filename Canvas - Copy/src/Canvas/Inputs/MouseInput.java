@@ -179,6 +179,10 @@ public class MouseInput{
         return Vector2D.of(mouseCoords.x, mouseCoords.y);
     }
 
+    /**
+     * returns 1, 0 or -1 per call telling direction
+     * @return
+     */
     public double getMouseWheelPosition(){
         return mouseWheel;
     }

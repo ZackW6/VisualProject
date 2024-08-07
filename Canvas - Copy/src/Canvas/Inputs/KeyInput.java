@@ -81,13 +81,13 @@ public class KeyInput implements KeyListener {
                     currentGather.set(currentGather.size()-1, currentGather.get(currentGather.size()-1).substring(0,currentGather.get(currentGather.size()-1).length()-1));
                 }else{
                     if (currentGather.size()>1){
-                        currentGather.remove(currentGather.size());
+                        currentGather.remove(currentGather.size()-1);
                     }
                 }
                 return;
             }
 
-            if (KeyEvent.getKeyText(e.getKeyCode()).equals("ENTER")){
+            if (e.getKeyCode() == KeyEvent.VK_ENTER){
                 currentGather.add("");
                 return;
             }
@@ -142,6 +142,10 @@ public class KeyInput implements KeyListener {
 
     public List<String> getCurrentGather(){
         return currentGather;
+    }
+
+    public void setCurrentGather(List<String> list){
+        this.currentGather = new ArrayList<>(list);
     }
 
     public void endGatherAll(){

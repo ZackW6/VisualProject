@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
@@ -25,6 +26,7 @@ import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.Square;
 import Canvas.Shapes.Text;
 import Canvas.Shapes.VisualJ;
+import Canvas.Shapes.UserButtons.TypeButton;
 import Canvas.Util.ColorEXT;
 import Canvas.Util.Profile;
 import Canvas.Util.Random;
@@ -51,26 +53,22 @@ public class App {
         keyboard = new KeyInput(vis);
         
         vis.startThread();
-        defineShapes(vis);
+        
         
         CommandBase runner = Commands.timed(()->runAll(vis), 10);
         runner.schedule();
 
         keyboard.keyPressed("Up").whileTrue(Commands.runOnce(()->{
             vis.moveFrame(0,5);
-            System.out.println("HERE");
         }),10);
         keyboard.keyPressed("Left").whileTrue(Commands.runOnce(()->{
             vis.moveFrame(5,0);
-            System.out.println("HERE");
         }),10);
         keyboard.keyPressed("Right").whileTrue(Commands.runOnce(()->{
             vis.moveFrame(-5,0);
-            System.out.println("HERE");
         }),10);
         keyboard.keyPressed("Down").whileTrue(Commands.runOnce(()->{
             vis.moveFrame(0,-5);
-            System.out.println("HERE");
         }),10);
 
         // Commands.timed(()->{
@@ -83,8 +81,20 @@ public class App {
         },MouseInputs.MOUSE_RELEASED, MouseSide.LEFT);
 
         mouse.addEvent(()->{
-            vis.setZoom(vis.getZoom()+mouse.getMouseWheelPosition()/50);
+            if (mouse.getMouseWheelPosition() < 0){
+                vis.setZoom(vis.getZoom()/1.05);
+                return;
+            }
+            vis.setZoom(vis.getZoom()*1.05);
         }, MouseInputs.MOUSE_WHEEL_MOVED, MouseSide.LEFT);
+
+        TypeButton typeButton = new TypeButton(100, 100, 100, 100, Color.GRAY, true, vis);
+        typeButton.assignTextDetails("Arial", Font.PLAIN, 30, Color.GREEN, Vector2D.of(10,10));
+        vis.add(typeButton);
+        
+        mouse.addEvent(()->{
+            typeButton.isClicked(mouse.getMouseCoords(),vis);
+        },MouseInputs.MOUSE_PRESSED, MouseSide.LEFT);
 
         mouse.addEvent(()->{
             if (hasReleased){
@@ -95,9 +105,9 @@ public class App {
             vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
             // vis.setZoom(mouse.getMouseCoords().y/1000);
         },MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
-
-        mouse.addEvent(()->keyboard.beginGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.LEFT);
-        mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
+        defineShapes(vis);
+        // mouse.addEvent(()->keyboard.beginGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.LEFT);
+        // mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
     }
 
     public static void runAll(VisualJ vis){
@@ -106,7 +116,7 @@ public class App {
         for (int i=0;i<shapes.size();i++){
             if (shapes.get(i)!=null){
                 // shapes.get(i).rotate(shapes.get(i).getDegree()+1);
-                addingText.setText(keyboard.getCurrentGather().get(0));
+                // addingText.setText(keyboard.getCurrentGather().get(0));
             }
         }
         profile.stop();
@@ -120,7 +130,7 @@ public class App {
 
             // List<Vector2D> list = List.of(Vector2D.of(-100,-100),Vector2D.of(100,100));
             // Line line = new Line(100, -0, list, Color.blue, 10);
-
+            
             Circle circ1 = new Circle(100, 100, 5, Color.RED, true);
             Circle circ2 = new Circle(-100, -100, 5, Color.RED, true);
             Polygon polygon = new Polygon(0, 0, new double[]{0,0,50},new double[]{0,50,0}, Color.RED, false);
@@ -128,6 +138,9 @@ public class App {
             PolyShape poly = new PolyShape(x, y, List.of(circ1,circ2,polygon));
             vis.add(poly);
             vis.add(new Circle(x, y, 500, Color.RED, false));
+            
+            Circle circ = new Circle(0, 0, 20, Color.BLUE, false);
+            vis.add(circ);
         }
         vis.add(addingText);
     }

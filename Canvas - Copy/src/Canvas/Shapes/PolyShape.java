@@ -2,6 +2,7 @@ package Canvas.Shapes;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,10 +27,16 @@ public class PolyShape extends Obj{
 
         this.shapes = new ArrayList<>(shapes);
         
+        reconfigure();
+    }
+
+    private void reconfigure(){
         Vector2D dimensions = getDimensions(shapes);
 
         this.width = dimensions.x;
         this.height = dimensions.y;
+        addedCoords.x = -width/2;
+        addedCoords.y = -height/2;
     }
 
     private static Vector2D getDimensions(List<Obj> shapes){
@@ -83,14 +90,27 @@ public class PolyShape extends Obj{
 
     public void add(Obj object){
         shapes.add(object);
+        reconfigure();
     }
 
     public void add(int index, Obj object){
         shapes.add(index, object);
+        reconfigure();
+    }
+
+    public void remove(){
+        shapes.remove(shapes.size()-1);
+        reconfigure();
+    }
+
+    public void remove(int index){
+        shapes.remove(index);
+        reconfigure();
     }
 
     public void set(int index, Obj object){
         shapes.set(index, object);
+        reconfigure();
     }
 
     public boolean moveIndex(Obj object, int index){
@@ -101,6 +121,7 @@ public class PolyShape extends Obj{
         Obj temp = shapes.get(index);
         shapes.set(index, object);
         shapes.set(currentIndex, temp);
+        reconfigure();
         return true;
     }
 
@@ -114,17 +135,22 @@ public class PolyShape extends Obj{
     
     @Override
     public void show(Graphics2D g2dBuffer, double zoomRatio) {
+        // g2dBuffer.translate((width/2) * zoomRatio,(height/2) * zoomRatio);
         for (int i = 0; i < shapes.size(); i++){
-            double xp=(shapes.get(i).coords.x+shapes.get(i).addedCoords.x)*zoomRatio;
-            double yp=(shapes.get(i).coords.y+shapes.get(i).addedCoords.y)*zoomRatio;
-            double radians=(Math.toRadians(shapes.get(i).degree));
+
+            double xp = (shapes.get(i).coords.x + shapes.get(i).addedCoords.x)*zoomRatio;
+            double yp = (shapes.get(i).coords.y + shapes.get(i).addedCoords.y)*zoomRatio;
+            double rotX = xp + (shapes.get(i).width/2) * zoomRatio;
+            double rotY = yp + (shapes.get(i).height/2) * zoomRatio;
+            double radians = (Math.toRadians(shapes.get(i).degree));
 
             g2dBuffer.setColor(shapes.get(i).col);
-            g2dBuffer.translate((int)xp,(int)yp);
+            g2dBuffer.translate((int)rotX,(int)rotY);
             g2dBuffer.rotate(radians);
             shapes.get(i).show(g2dBuffer, zoomRatio);
             g2dBuffer.rotate(-radians);
-            g2dBuffer.translate((int)-xp,(int)-yp);
+            g2dBuffer.translate((int)-rotX,(int)-rotY);
         }
+        // g2dBuffer.translate(-(width/2) * zoomRatio,-(height/2) * zoomRatio);
     }
 }

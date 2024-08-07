@@ -59,4 +59,9 @@ public class Vector2D {
             return rotation+180;
         }
     }
+
+    @Override
+    public String toString(){
+        return "["+x+", "+y+"]";
+    }
 }

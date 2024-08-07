@@ -44,11 +44,11 @@ public class VisualJ extends JFrame{
         try {
             for (int i = 0; i < shapes.size(); i++) {
                 if (shapes.get(i)!=null){
-                    double xp = (moveScreen.x + shapes.get(i).coords.x + shapes.get(i).addedCoords.x)*zoomRatio;
-                    double yp = (moveScreen.y + shapes.get(i).coords.y + shapes.get(i).addedCoords.y)*zoomRatio;
-                    double radians=(Math.toRadians(shapes.get(i).degree));
-                    double rotX=xp+(shapes.get(i).width/2)*zoomRatio;
-                    double rotY=yp+(shapes.get(i).height/2)*zoomRatio;
+                    double xp = (-WIDTH/2 + moveScreen.x + shapes.get(i).coords.x + shapes.get(i).addedCoords.x) * zoomRatio;
+                    double yp = (-HEIGHT/2 + moveScreen.y + shapes.get(i).coords.y + shapes.get(i).addedCoords.y) * zoomRatio;
+                    double radians = (Math.toRadians(shapes.get(i).degree));
+                    double rotX = xp + (shapes.get(i).width/2) * zoomRatio;
+                    double rotY = yp + (shapes.get(i).height/2) * zoomRatio;
                     g2dBuffer.setColor(shapes.get(i).col);
                     g2dBuffer.translate((int)rotX,(int)rotY);
                     g2dBuffer.rotate(radians);
