@@ -30,6 +30,11 @@ public class PolyShape extends Obj{
         reconfigure();
     }
 
+    public PolyShape(double xcoord, double ycoord) {
+        super(xcoord, ycoord, 0, 0, Color.BLACK, false);
+
+    }
+
     private void reconfigure(){
         Vector2D dimensions = getDimensions(shapes);
 
@@ -40,7 +45,9 @@ public class PolyShape extends Obj{
     }
 
     private static Vector2D getDimensions(List<Obj> shapes){
-
+        if (shapes.size() <= 0){
+            return Vector2D.of(0,0);
+        }
         double greatx = shapes.get(0).coords.x + shapes.get(0).width;
         double greaty = shapes.get(0).coords.y + shapes.get(0).height;
         double leastx = shapes.get(0).coords.x;
@@ -65,6 +72,9 @@ public class PolyShape extends Obj{
     }
 
     private static Vector2D getTranslation(List<Obj> shapes){
+        if (shapes.size() <= 0){
+            return Vector2D.of(0,0);
+        }
         double greatx = shapes.get(0).coords.x + shapes.get(0).width;
         double greaty = shapes.get(0).coords.y + shapes.get(0).height;
         double leastx = shapes.get(0).coords.x;
@@ -88,6 +98,10 @@ public class PolyShape extends Obj{
         return Vector2D.of(width, height);
     }
 
+    public Obj get(int index){
+        return shapes.get(index);
+    }
+
     public void add(Obj object){
         shapes.add(object);
         reconfigure();
@@ -98,14 +112,31 @@ public class PolyShape extends Obj{
         reconfigure();
     }
 
-    public void remove(){
+    public boolean remove(){
+        if (shapes.size() <= 0){
+            return false;
+        }
         shapes.remove(shapes.size()-1);
         reconfigure();
+        return true;
     }
 
-    public void remove(int index){
+    public boolean remove(Obj object){
+        if (shapes.indexOf(object) == -1){
+            return false;
+        }
+        shapes.remove(object);
+        reconfigure();
+        return true;
+    }
+
+    public boolean remove(int index){
+        if (shapes.size() <= index || index < 0){
+            return false;
+        }
         shapes.remove(index);
         reconfigure();
+        return true;
     }
 
     public void set(int index, Obj object){
@@ -152,5 +183,9 @@ public class PolyShape extends Obj{
             g2dBuffer.translate((int)-rotX,(int)-rotY);
         }
         // g2dBuffer.translate(-(width/2) * zoomRatio,-(height/2) * zoomRatio);
+    }
+
+    public int indexOf(Obj obj) {
+        return shapes.indexOf(obj);
     }
 }

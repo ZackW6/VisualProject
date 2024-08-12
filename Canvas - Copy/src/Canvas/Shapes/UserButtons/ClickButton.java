@@ -12,7 +12,6 @@ public class ClickButton extends Rectangle implements ClickableButton{
 
     public ClickButton(double X, double Y, double Width, double Height, Color Color, boolean tf) {
         super(X, Y, Width, Height, Color, tf);
-        //TODO Auto-generated constructor stub
     }
 
     public void setRunWhenClicked(Runnable run){

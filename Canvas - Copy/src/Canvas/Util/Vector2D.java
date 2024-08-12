@@ -1,12 +1,14 @@
 package Canvas.Util;
 
-public class Vector2D {
+public class Vector2D implements Comparable<Vector2D>{
     public double x, y;
 
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
     }
+
+    public Vector2D() {}
 
     public static Vector2D of(double x, double y){
         return new Vector2D(x, y);
@@ -63,5 +65,11 @@ public class Vector2D {
     @Override
     public String toString(){
         return "["+x+", "+y+"]";
+    }
+
+    @Override
+    public int compareTo(Vector2D other) {
+        int cmpX = Double.compare(this.x, other.x);
+        return (cmpX != 0) ? cmpX : Double.compare(this.y, other.y);
     }
 }

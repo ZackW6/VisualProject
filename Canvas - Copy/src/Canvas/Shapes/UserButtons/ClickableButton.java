@@ -16,9 +16,13 @@ public interface ClickableButton{
 
     public default boolean isClicked(Vector2D point, VisualJ vis){
         double zoom = vis.getZoom();
-        Vector2D newPoint = (point.subtract(vis.getFrameMove())).multiply(zoom);
-        Vector2D newPose = (this.getCoords()).multiply(zoom);
-        Vector2D newDimensions = this.getDimensions();
+
+        double xp = (-vis.WIDTH/2 + vis.getFrameMove().x + getCoords().x) * zoom + vis.WIDTH/2;
+        double yp = (-vis.HEIGHT/2 + vis.getFrameMove().y + getCoords().y) * zoom + vis.HEIGHT/2;
+
+        Vector2D newPoint = point;
+        Vector2D newPose = Vector2D.of(xp,yp);
+        Vector2D newDimensions = this.getDimensions().multiply(zoom);
         if (newPoint.x > newPose.x && newPoint.x < newPose.x + newDimensions.x && newPoint.y > newPose.y && newPoint.y < newPose.y + newDimensions.y){
             runOnClick();
             return true;

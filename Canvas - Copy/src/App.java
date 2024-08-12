@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Font;
+import java.time.zone.ZoneOffsetTransitionRule.TimeDefinition;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
@@ -11,11 +12,18 @@ import Canvas.Commands.ConditionalCommand;
 import Canvas.Commands.InstantCommand;
 import Canvas.Commands.TimedCommand;
 import Canvas.Commands.Trigger;
+import Canvas.FileUtil.FileParser;
 import Canvas.FileUtil.FileWriter;
 import Canvas.Inputs.KeyInput;
 import Canvas.Inputs.MouseInput;
 import Canvas.Inputs.MouseInput.MouseInputs;
 import Canvas.Inputs.MouseInput.MouseSide;
+import Canvas.Pathing.RRT.InformedRRTStar;
+import Canvas.Pathing.RRT.Obstacle;
+import Canvas.Pathing.RRT.RRT;
+import Canvas.Pathing.RRT.RRTBase;
+import Canvas.Pathing.RRT.RRTStar;
+import Canvas.Pathing.RRT.RRTBase.Field;
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.Obj;
@@ -32,6 +40,12 @@ import Canvas.Util.Profile;
 import Canvas.Util.Random;
 import Canvas.Util.Vector2D;
 
+class MouseMovingHelper{
+    public Vector2D mouseMarkCoords = Vector2D.of(0,0);
+    public Vector2D startMarkCoords = Vector2D.of(0,0);
+    public boolean hasReleased = true;
+}
+
 public class App {
     public static VisualJ vis = null;
     public static MouseInput mouse = null;
@@ -42,9 +56,7 @@ public class App {
     public static Text physicsFR = new Text(100, 140, 15, Color.RED, "");
     public static Text addingText = new Text(200, 200, 100, Color.RED, "");
 
-    public static Vector2D mouseMarkCoords = Vector2D.of(0,0);
-    public static Vector2D startMarkCoords = Vector2D.of(0,0);
-    public static boolean hasReleased = true;
+    
 
     public static void main(String[] args) {
         
@@ -53,10 +65,26 @@ public class App {
         keyboard = new KeyInput(vis);
         
         vis.startThread();
-        
-        
+                
         CommandBase runner = Commands.timed(()->runAll(vis), 10);
         runner.schedule();
+
+        RRTBase rrt = new InformedRRTStar(vis, new Field(0, 0, 1700, 900));
+
+        FileParser fileParser = new FileParser("C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
+        List<Obstacle> obstacles = fileParser.loadSquares(rrt, "navgrid");
+        rrt.scheduleObstacles(obstacles);
+
+        rrt.setBias(0);
+        rrt.setMinimumDistance(200);
+        rrt.setMaxStepDist(10);
+        rrt.scheduleStart(Vector2D.of(850,450));
+        rrt.setDrawingCoords(0,0);
+        rrt.scheduleGoal(Vector2D.of(1000,10));
+
+
+        TimedCommand timedCommand = new TimedCommand(()->{rrt.process();}, 30);
+        timedCommand.schedule();
 
         keyboard.keyPressed("Up").whileTrue(Commands.runOnce(()->{
             vis.moveFrame(0,5);
@@ -76,9 +104,15 @@ public class App {
         //     vis.setZoom(mouse.getMouseCoords().y/1000);
         // },10).schedule();
 
-        mouse.addEvent(()->{
-            hasReleased = true;
-        },MouseInputs.MOUSE_RELEASED, MouseSide.LEFT);
+        // TypeButton typeButton = new TypeButton(100, 100, 100, 100, Color.GRAY, true, vis);
+        // typeButton.assignTextDetails("Arial", Font.PLAIN, 30, Color.GREEN, Vector2D.of(10,10));
+        // vis.add(typeButton);
+        
+        // mouse.addEvent(()->{
+        //     typeButton.isClicked(mouse.getMouseCoords(),vis);
+        // },MouseInputs.MOUSE_PRESSED, MouseSide.LEFT);
+        
+        
 
         mouse.addEvent(()->{
             if (mouse.getMouseWheelPosition() < 0){
@@ -88,23 +122,54 @@ public class App {
             vis.setZoom(vis.getZoom()*1.05);
         }, MouseInputs.MOUSE_WHEEL_MOVED, MouseSide.LEFT);
 
-        TypeButton typeButton = new TypeButton(100, 100, 100, 100, Color.GRAY, true, vis);
-        typeButton.assignTextDetails("Arial", Font.PLAIN, 30, Color.GREEN, Vector2D.of(10,10));
-        vis.add(typeButton);
         
+        
+
+        MouseMovingHelper mouseHelperLeft = new MouseMovingHelper();
         mouse.addEvent(()->{
-            typeButton.isClicked(mouse.getMouseCoords(),vis);
-        },MouseInputs.MOUSE_PRESSED, MouseSide.LEFT);
+            mouseHelperLeft.hasReleased = true;
+        },MouseInputs.MOUSE_RELEASED, MouseSide.LEFT);
 
         mouse.addEvent(()->{
-            if (hasReleased){
-                mouseMarkCoords = mouse.getMouseCoords();
-                startMarkCoords = vis.getFrameMove();
-                hasReleased = false;
+            for (int i = 0; i < rrt.getObstacles().size(); i++){
+                rrt.getObstacles().get(i).isClicked(mouse.getMouseCoords(), vis);
             }
-            vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
-            // vis.setZoom(mouse.getMouseCoords().y/1000);
+            
+            if (mouseHelperLeft.hasReleased){
+                mouseHelperLeft.mouseMarkCoords = mouse.getMouseCoords();
+                mouseHelperLeft.startMarkCoords = rrt.getGoal();
+                mouseHelperLeft.hasReleased = false;
+            }
+            rrt.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
+            // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
         },MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
+
+        MouseMovingHelper mouseHelperRight = new MouseMovingHelper();
+        mouse.addEvent(()->{
+            mouseHelperRight.hasReleased = true;
+        },MouseInputs.MOUSE_RELEASED, MouseSide.RIGHT);
+
+        mouse.addEvent(()->{
+            if (mouseHelperRight.hasReleased){
+                mouseHelperRight.mouseMarkCoords = mouse.getMouseCoords();
+                mouseHelperRight.startMarkCoords = rrt.getStart();
+                mouseHelperRight.hasReleased = false;
+            }
+            rrt.scheduleStart(Vector2D.of(mouseHelperRight.startMarkCoords.x-(mouseHelperRight.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperRight.startMarkCoords.y-(mouseHelperRight.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
+            // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
+            // vis.setZoom(mouse.getMouseCoords().y/1000);
+        },MouseInputs.MOUSE_DRAGGED, MouseSide.RIGHT);
+        
+        // mouse.addEvent(()->{
+        //     if (hasReleased){
+        //         mouseMarkCoords = mouse.getMouseCoords();
+        //         startMarkCoords = vis.getFrameMove();
+        //         hasReleased = false;
+        //     }
+        //     vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
+        //     // vis.setZoom(mouse.getMouseCoords().y/1000);
+        // },MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
+
         defineShapes(vis);
         // mouse.addEvent(()->keyboard.beginGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.LEFT);
         // mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
@@ -124,24 +189,25 @@ public class App {
 
     public static void defineShapes(VisualJ vis){
         
-        for (int i=0;i<1;i++){
-            int x = 0;//Random.randInt(0, vis.WIDTH);
-            int y = 0;//Random.randInt(0, vis.HEIGHT);
+        
+        // for (int i=0;i<1;i++){
+        //     int x = 0;//Random.randInt(0, vis.WIDTH);
+        //     int y = 0;//Random.randInt(0, vis.HEIGHT);
 
-            // List<Vector2D> list = List.of(Vector2D.of(-100,-100),Vector2D.of(100,100));
-            // Line line = new Line(100, -0, list, Color.blue, 10);
+        //     // List<Vector2D> list = List.of(Vector2D.of(-100,-100),Vector2D.of(100,100));
+        //     // Line line = new Line(100, -0, list, Color.blue, 10);
             
-            Circle circ1 = new Circle(100, 100, 5, Color.RED, true);
-            Circle circ2 = new Circle(-100, -100, 5, Color.RED, true);
-            Polygon polygon = new Polygon(0, 0, new double[]{0,0,50},new double[]{0,50,0}, Color.RED, false);
+        //     Circle circ1 = new Circle(100, 100, 5, Color.RED, true);
+        //     Circle circ2 = new Circle(-100, -100, 5, Color.RED, true);
+        //     Polygon polygon = new Polygon(0, 0, new double[]{0,0,50},new double[]{0,50,0}, Color.RED, false);
 
-            PolyShape poly = new PolyShape(x, y, List.of(circ1,circ2,polygon));
-            vis.add(poly);
-            vis.add(new Circle(x, y, 500, Color.RED, false));
+        //     PolyShape poly = new PolyShape(x, y, List.of(circ1,circ2,polygon));
+        //     vis.add(poly);
+        //     vis.add(new Circle(x, y, 500, Color.RED, false));
             
-            Circle circ = new Circle(0, 0, 20, Color.BLUE, false);
-            vis.add(circ);
-        }
-        vis.add(addingText);
+        //     Circle circ = new Circle(0, 0, 20, Color.BLUE, false);
+        //     vis.add(circ);
+        // }
+        // vis.add(addingText);
     }
 }

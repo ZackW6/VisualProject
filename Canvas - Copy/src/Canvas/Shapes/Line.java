@@ -39,31 +39,18 @@ public class Line extends Polygoni{
     }
 
     private void remakeLine(double[] arrintx, double[] arrinty, double LineWidth){
-        double slope;
-        if (arrintx[0]<arrintx[1]){
-            slope = (arrinty[1]-arrinty[0])/(arrintx[1]-arrintx[0]);
-        }else{
-            slope = (arrinty[0]-arrinty[1])/(arrintx[0]-arrintx[1]);
-        }
+        double slope = (arrinty[1]-arrinty[0])/(arrintx[1]-arrintx[0]);
+
         double perpendicular = -1.0/(slope+0.00000000001);
 
         double movex = Math.sqrt((Math.pow(LineWidth/2,2))/(1+Math.pow(perpendicular,2)));
         double movey = movex * perpendicular;
 
         points.clear();
-        points.add(Vector2D.of(0,0));
-        points.add(Vector2D.of(0,0));
-        points.add(Vector2D.of(0,0));
-        points.add(Vector2D.of(0,0));
-
-        points.get(0).x = (arrintx[0]+movex);
-        points.get(0).y = (arrinty[0]+movey);
-        points.get(1).x = (arrintx[0]-movex);
-        points.get(1).y = (arrinty[0]-movey);
-        points.get(2).x = (arrintx[1]-movex);
-        points.get(2).y = (arrinty[1]-movey);
-        points.get(3).x = (arrintx[1]+movex);
-        points.get(3).y = (arrinty[1]+movey);
+        points.add(Vector2D.of(arrintx[0]+movex,arrinty[0]+movey));
+        points.add(Vector2D.of(arrintx[0]-movex,arrinty[0]-movey));
+        points.add(Vector2D.of(arrintx[1]-movex,arrinty[1]-movey));
+        points.add(Vector2D.of(arrintx[1]+movex,arrinty[1]+movey));
     }
     
     public void setVertexPos(int indexOfPoint, double x, double y){

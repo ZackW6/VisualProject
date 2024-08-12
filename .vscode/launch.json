@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "RangeList",
+            "request": "launch",
+            "mainClass": "Canvas.Util.RangeList",
+            "projectName": "VisualProject_a746e525"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"

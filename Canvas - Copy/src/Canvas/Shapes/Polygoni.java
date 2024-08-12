@@ -14,7 +14,7 @@ import Canvas.Util.Vector2D;
 public abstract class Polygoni extends Obj{
 
     protected CopyOnWriteArrayList<Vector2D> points;
-    private Vector2D translationVector;
+    protected Vector2D translationVector;
 
 
     public Polygoni(double X,double Y,double[] arrintx,double[] arrinty, Color Color,boolean tf){

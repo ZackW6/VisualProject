@@ -25,7 +25,7 @@ public abstract class Obj{
      * @param col
      * @param fill
      */
-    protected Obj(double xcoord,double ycoord,double width, double height,Color col,boolean fill){
+    protected Obj(double xcoord,double ycoord,double width, double height, Color col,boolean fill){
         this.coords.x=xcoord;
         this.coords.y=ycoord;
         this.col=col;
