@@ -3,11 +3,14 @@ package Canvas.Pathing.RRT;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
+import Canvas.Shapes.Obj;
 import Canvas.Shapes.Rectangle;
 import Canvas.Shapes.UserButtons.ClickableButton;
+import Canvas.Util.DrawingAccessable;
+import Canvas.Util.Point;
 import Canvas.Util.Vector2D;
 
-public class Obstacle extends Rectangle implements ClickableButton{
+public class Obstacle extends Rectangle implements ClickableButton, Point{
 
     private boolean currentObstacle;
     public Obstacle(double X, double Y, double Width, double Height, boolean currentObstacle) {
@@ -104,6 +107,10 @@ public class Obstacle extends Rectangle implements ClickableButton{
         return p.x >= xmin && p.x <= xmax && p.y >= ymin && p.y <= ymax;
     }
 
+    public boolean isPointInsideRectangle(Vector2D p) {
+        return p.x >= this.getX() && p.x <= this.getX() + this.getWidth() && p.y >= this.getY() && p.y <= this.getY() + this.getHeight();
+    }
+
     @Override
     public void runOnClick() {
         
@@ -112,5 +119,19 @@ public class Obstacle extends Rectangle implements ClickableButton{
     @Override
     public Vector2D getDimensions() {
         return Vector2D.of(this.getWidth(), this.getHeight());
+    }
+
+    @Override
+    public double getX() {
+        return coords.x;
+    }
+
+    @Override
+    public double getY() {
+        return coords.y;
+    }
+
+    public boolean isObstacle(){
+        return currentObstacle;
     }
 }

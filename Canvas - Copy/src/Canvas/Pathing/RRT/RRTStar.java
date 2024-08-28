@@ -2,15 +2,24 @@ package Canvas.Pathing.RRT;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.function.ToDoubleFunction;
 
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
+import Canvas.Util.KDTree.KDNode;
+import Canvas.Util.KDTree;
 import Canvas.Util.Profile;
 import Canvas.Util.Vector2D;
 
-public class RRTStar extends RRTBase {
+public class RRTStar extends RRTHelperBase {
 
     double bestCost = Double.POSITIVE_INFINITY;
 
@@ -29,105 +38,104 @@ public class RRTStar extends RRTBase {
         Node nearestPoint = getNearestPoint(randomPoint);
         Node newPoint = getNewPoint(randomPoint, nearestPoint);
 
-        if (!collidesObstacle(newPoint) && !isFinished()) {
+        if (!isFinished()) {
             newPoint.setParent(nearestPoint);
 
-            List<Node> nodes = getNodes();
             List<Node> nearbyNodes = getNearbyNodes(newPoint);
+
             double currentCost = Double.POSITIVE_INFINITY;
-            // Check for better parents among nearby nodes (rewiring)
+
+            boolean gotParent = false;
+            ArrayList<Node> confirmedNodes = new ArrayList<>();
+
             for (Node nearbyNode : nearbyNodes) {
                 
-                double cost = 0;
-                Node temp = new Node(nearbyNode);
-                while (temp.getParent() != null){
-                    cost += temp.distanceTo(temp.getParent());
-                    temp = temp.getParent();
-                }
-                double potentialCost = cost + newPoint.distanceTo(nearbyNode);
-                // double potentialCost = nearbyNode.getCost() + nearbyNode.distanceTo(newPoint);
+                double potentialCost = nearbyNode.getCost() + newPoint.distanceTo(nearbyNode);
 
                 if (potentialCost < currentCost && !collidesObstacle(newPoint, nearbyNode)) {
                     newPoint.setParent(nearbyNode);
                     currentCost = potentialCost;
+                    gotParent = true;
+                    confirmedNodes.add(nearbyNode);
+                    newPoint.cost = potentialCost;
                 }
             }
 
+            if (!gotParent){
+                return;
+            }
             drawing.add(newPoint.getCircle());
             nodes.add(newPoint);
-            // Rewire nearby nodes to this new node if it results in a shorter path
             
-            for (int i = 0; i < nearbyNodes.size(); i++) {
-                if (getCost(newPoint) + newPoint.distanceTo(nearbyNodes.get(i)) < getCost(nearbyNodes.get(i)) && !collidesObstacle(newPoint, nearbyNodes.get(i))) {
-                    nearbyNodes.get(i).setParent(newPoint);
+            for (Node node : confirmedNodes) {
+                if (newPoint.cost + newPoint.distanceTo(node) < node.cost) {
+                    node.setParent(newPoint);
                 }
             }
             
             Node goalSight = new Node(goal, newPoint);
 
             if (!collidesObstacle(goalSight)){
-                double cost = 0;
-                Node temp = new Node(goalSight);
 
-                while (temp.getParent() != null){
-                    cost += temp.distanceTo(temp.getParent());
-                    temp = temp.getParent();
+                double potentialCost = newPoint.cost + newPoint.distanceTo(goal);
+                if (potentialCost < bestCost){
+                    goal.setParent(newPoint);
+                    goal.cost = potentialCost;
                 }
-
-                if (cost < bestCost){
-                    bestCost = cost;
-
-                    drawing.remove(drawing.indexOf(goal.getCircle()));
-                
-                    goalSight.getCircle().setColor(Color.MAGENTA);
-                    this.goal = goalSight;
-                    drawing.add(goal.getCircle());
-                    
-                
-                    if (paths.size()>0){
-                        vis.remove(paths.get(0));
-                        paths.clear();
-                    }
-                    paths.add(getPath(this.goal));
-                    vis.add(paths.get(0));
-                }
-            }
-
-            if (bestCost != Double.POSITIVE_INFINITY){
-                double cost = 0;
-                Node temp = new Node(goal);
-
-                while (temp.getParent() != null){
-                    cost += temp.distanceTo(temp.getParent());
-                    temp = temp.getParent();
-                }
-
-                if (cost < bestCost){
-                    
-                    bestCost = cost;
-                    
-                    if (paths.size()>0){
-                        vis.remove(paths.get(0));
-                        paths.clear();
-                    }
-                    paths.add(getPath(this.goal));
-                    vis.add(paths.get(0));
-                }
-                drawing.moveIndex(goal.getCircle(),drawing.getArray().size()-1);
-                drawing.moveIndex(start.getCircle(),drawing.getArray().size()-2);
             }
         }
+
+        double cost = goal.getCost();
+
+        if (goal.getParent() == null){
+            cost = Double.POSITIVE_INFINITY;
+        }
+
+        if (cost < bestCost){
+            bestCost = cost;
+            if (paths.size()>0){
+                drawing.remove(paths.get(0));
+                paths.clear();
+            }
+            paths.add(getPath(this.goal));
+            drawing.add(paths.get(0));
+        }
+            
+        
+
+        if (paths.size() > 0){
+            drawing.moveIndex(paths.get(0),drawing.getArray().size()-3);
+        }
+        
+        drawing.moveIndex(goal.getCircle(),drawing.getArray().size()-1);
+        drawing.moveIndex(start.getCircle(),drawing.getArray().size()-2);
+        // capNodeCount(1000);
+    }
+
+    protected List<Node> organizeByCost(List<Node> list, Node extraNode){
+        ArrayList<Node> sorted = new ArrayList<>(list);
+        sorted.sort(new Comparator<Node>() {
+            @Override
+            public int compare(Node item1, Node item2) {
+                if (extraNode == null){
+                    return Double.compare(item1.getCost(), item2.getCost());
+                }
+                return Double.compare(item1.getCost() + item1.distanceTo(extraNode), item2.getCost() + item2.distanceTo(extraNode));
+            }
+        });
+        return sorted;
+    }
+
+    protected List<Node> organizeByCost(List<Node> list){
+        return organizeByCost(list, null);
     }
 
     protected List<Node> getNearbyNodes(Node newPoint) {
-        List<Node> nearbyNodes = new ArrayList<>();
-        double radius = calculateRadius();
-        for (Node node : getNodes()) {
-            if (node.distanceTo(newPoint) < radius) {
-                nearbyNodes.add(node);
-            }
-        }
-        return nearbyNodes;
+        return getNearbyNodes(newPoint, calculateRadius());
+    }
+
+    protected List<Node> getNearbyNodes(Node newPoint, double radius) {
+        return nodes.findInRange(new Node(newPoint.x - radius, newPoint.y - radius), new Node(newPoint.x + radius, newPoint.y + radius));
     }
 
     protected List<Node> getNearbyNodes(Node newPoint, List<Node> toLookThrough) {
@@ -143,9 +151,6 @@ public class RRTStar extends RRTBase {
 
     private double calculateRadius() {
         return 100;
-        // int n = getNodes().size();
-        // double gammaRRTStar = 1.0; // This constant can be adjusted based on the environment
-        // return gammaRRTStar * Math.sqrt(Math.log(n) / n);
     }
 
     public boolean isFinished() {
@@ -153,68 +158,158 @@ public class RRTStar extends RRTBase {
     }
 
     @Override
-    protected synchronized void setGoal(Vector2D goal){
+    public
+    synchronized void setGoal(Vector2D goal){
         bestCost = Double.POSITIVE_INFINITY;
-        super.setGoal(goal);
+        this.goal.setPosition(goal.x, goal.y);
+        for (Node node : getNearbyNodes(this.goal)){
+            double potentialCost = node.getCost() + node.distanceTo(goal);
+            if (potentialCost < bestCost && !collidesObstacle(node, this.goal)){
+                this.goal.setParent(node);
+                bestCost = this.goal.getCost();
+            }
+        }
+        if (this.goal.getParent() != null){
+            if (paths.size()>0){
+                drawing.remove(paths.get(0));
+                paths.clear();
+            }
+            paths.add(getPath(this.goal));
+            drawing.add(paths.get(0));
+        }
     }
 
     @Override
-    protected synchronized void setStart(Vector2D start){
+    public
+    synchronized void setObstacles(List<Obstacle> obstacles) {
+        super.setObstacles(obstacles);
         bestCost = Double.POSITIVE_INFINITY;
-        if (getNodes().indexOf(this.start) != -1){
-            getNodes().remove(this.start);
-            drawing.remove(this.start.getCircle());
+        goal.setParent(null);
+        if (paths.size()>0){
+            drawing.remove(paths.get(0));
+            paths.clear();
         }
-
-        this.start = new Node(start.x, start.y);
-
-        getNodes().add(this.start);
-        this.start.getCircle().setColor(Color.ORANGE);
-        drawing.add(this.start.getCircle());
-
-        // ArrayList<Node> newNodes = new ArrayList<>(getNodes());
-
-        // Profile profile  = new Profile();
-        // profile.start();
-        // for (Node node : getNodes()){
-        //     if (!collidesObstacle(node, this.start) && !this.start.equals(node)){
-        //         node.setParent(this.start);
-        //     }else if (!this.start.equals(node)){
-        //         newNodes.remove(node);
-        //         // drawing.remove(node.getCircle());
-        //     }
-        // }
-        // profile.stop();
-        // System.out.println(profile.getTime());
-        // profile.reset();
-
-
-        
-        
-
-
-        rewireTree(getNodes());
     }
 
-    public void rewireTree(List<Node> nodes) {
-        
-        for (Node currentNode : nodes) {
-            double currentCost = Double.POSITIVE_INFINITY;
-            for (Node potentialParent : nodes) {
-                if (potentialParent.isDescendedOf(currentNode)) {
-                    continue;
-                }
-                double newCost = getCost(potentialParent) + potentialParent.distanceTo(currentNode);
-
-                if (newCost < currentCost && !collidesObstacle(potentialParent, currentNode)) {
-                    currentNode.setParent(potentialParent);
-                    currentCost = newCost;
-                }
+    @Override
+    public
+    synchronized void setStart(Vector2D start){
+        // LinkedList<Node> keepNodes = new LinkedList<>(nodes.toList());
+        // keepNodes.remove(this.start);
+        goal.setParent(null);
+        ArrayList<Node> goodNodes = new ArrayList<>();
+        for (Node node : nodes.toList()){
+            if (!node.equals(this.start) && !collidesObstacle(node, this.start)){
+                node.setParent(this.start);
+                goodNodes.add(node);
             }
         }
+        nodes.clear(drawing);
+
+        this.start.setPosition(start.x, start.y);
+
+        drawing.add(this.start.getCircle());
+        for (Node node : goodNodes){
+            drawing.add(node.getObj());
+        }
+        nodes.add(this.start);
+        nodes.addAll(goodNodes);
+
+        // nodes.addAll(keepNodes);
+
+        
+
+        // Map<Node, List<Node>> nearbyNodesCache = new HashMap<>();
+
+        // if (collidesObstacle(this.start, this.start)){
+        //     return;
+        // }
+
+        // for (Node node : keepNodes){
+            
+        //     if (!node.equals(this.start) && node.getParent().equals(this.start) && collidesObstacle(node)){
+        //         double currentCost = Double.POSITIVE_INFINITY;
+
+        //         List<Node> nearbyNodes = nearbyNodesCache.computeIfAbsent(node, this::getNearbyNodes);
+
+        //         for (Node potentialParent : nearbyNodes){
+                    
+        //             double potentialCost = potentialParent.getCost() + potentialParent.distanceTo(node);
+        //             if (potentialCost > currentCost || potentialParent.isDescendedOf(node)){
+        //                 continue;
+        //             }
+
+        //             if (!collidesObstacle(node, potentialParent)){
+                        
+        //                 node.setParent(potentialParent);
+        //                 currentCost = potentialCost;
+                        
+        //             }
+                    
+        //         }
+        //     }
+        // }
+
+        // for (Node node : getNearbyNodes(this.start,calculateRadius() * 3)){
+        //     if (!node.equals(this.start) && !collidesObstacle(node, this.start)){
+        //         node.setParent(this.start);
+        //     }
+        // }
+
+        if (goal.getParent() == null){
+            bestCost = Double.POSITIVE_INFINITY;
+            return;
+        }
+        if (paths.size()>0){
+            drawing.remove(paths.get(0));
+            paths.clear();
+        }
+
+        paths.add(getPath(this.goal));
+        drawing.add(paths.get(0));
+        bestCost = goal.getCost();
     }
 
     protected double getBestCost(){
         return bestCost;
     }
+
+    
+    /**
+     * with no node applicable returns null
+     * @param node
+     * @param list
+     * @return
+     */
+    protected Node findBestParent(Node node, List<Node> list){
+        double currentCost = Double.POSITIVE_INFINITY;
+        Node bestParent = null;
+        for (Node nearbyNode : list) {
+            
+            double potentialCost = nearbyNode.getCost() + node.distanceTo(nearbyNode);
+
+            if (potentialCost < currentCost && !collidesObstacle(node, nearbyNode)) {
+                bestParent = nearbyNode;
+                currentCost = potentialCost;
+                node.cost = potentialCost;
+            }
+        }
+        return bestParent;
+    }
+
+    // protected void capNodeCount(int N_max) {
+    //     List<Node> list = nodes.toList();
+    //     if (list.size() > N_max) {
+    //         // Sort nodes by total cost (cost to reach the node + estimated cost to goal)
+    //         list.sort(Comparator.comparingDouble(node -> node.getCost() + node.distanceTo(goal)));
+    
+    //         // Prune nodes exceeding the limit
+    //         while (list.size() > N_max) {
+    //             drawing.remove(list.get(list.size() - 1).getCircle());
+    //             list.remove(list.size() - 1);
+                
+    //             nodes.remove(list.get(list.size() - 1));
+    //         }
+    //     }
+    // }
 }

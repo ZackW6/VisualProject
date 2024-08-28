@@ -5,6 +5,7 @@ import java.util.List;
 
 import Canvas.Pathing.RRT.Obstacle;
 import Canvas.Pathing.RRT.RRTBase;
+import Canvas.Pathing.RRT.RRTHelperBase;
 import Canvas.Shapes.VisualJ;
 
 public class FileParser {
@@ -62,11 +63,11 @@ public class FileParser {
                 }
                 if (trueIndex<falseIndex){
                     usedIndex = trueIndex;
-                    Obstacle obstacleSquare = new Obstacle(rrt.getField().x()+(col*actualXSize), rrt.getField().y()+rrt.getField().height()-(row*actualYSize+actualYSize), actualXSize, actualYSize, true);
+                    Obstacle obstacleSquare = new Obstacle(rrt.getField().x()+(col*actualXSize), rrt.getField().y()+(row*actualYSize), actualXSize, actualYSize, true);
                     obstacles.add(obstacleSquare);
                 }else{
                     usedIndex = falseIndex;
-                    Obstacle obstacleSquare = new Obstacle(rrt.getField().x()+(col*actualXSize), rrt.getField().y()+rrt.getField().height()-(row*actualYSize+actualYSize), actualXSize, actualYSize, false);
+                    Obstacle obstacleSquare = new Obstacle(rrt.getField().x()+(col*actualXSize), rrt.getField().y()+(row*actualYSize), actualXSize, actualYSize, false);
                     obstacles.add(obstacleSquare);
                 }
                 

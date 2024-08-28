@@ -2,11 +2,12 @@ package Canvas.Shapes;
 import java.awt.*;
 import java.awt.Rectangle;
 
+import Canvas.Util.DrawingAccessable;
 import Canvas.Util.Vector2D;
 /**
  * Base class for all shapes of the library
  */
-public abstract class Obj{
+public abstract class Obj implements DrawingAccessable{
     protected Vector2D coords = new Vector2D(0, 0);
     protected double width;
     protected double height;
@@ -115,5 +116,10 @@ public abstract class Obj{
 
     public double getHeight(){
         return height;
+    }
+
+    @Override
+    public Obj getObj(){
+        return this;
     }
 }

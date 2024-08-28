@@ -1,6 +1,6 @@
 package Canvas.Util;
 
-public class Vector2D implements Comparable<Vector2D>{
+public class Vector2D implements Comparable<Vector2D>, Point {
     public double x, y;
 
     public Vector2D(double x, double y) {
@@ -12,6 +12,10 @@ public class Vector2D implements Comparable<Vector2D>{
 
     public static Vector2D of(double x, double y){
         return new Vector2D(x, y);
+    }
+
+    public static Vector2D of(Vector2D other){
+        return new Vector2D(other.x, other.y);
     }
 
     public Vector2D add(Vector2D other) {
@@ -37,10 +41,6 @@ public class Vector2D implements Comparable<Vector2D>{
     public Vector2D normalize() {
         double mag = magnitude();
         return new Vector2D(x / mag, y / mag);
-    }
-    
-    public double distanceTo(Vector2D vector){
-        return Math.sqrt(Math.pow(this.x-vector.x,2)+Math.pow(this.y-vector.y,2));
     }
 
     public double calculateAngleBetweenPoints(Vector2D other) {
@@ -71,5 +71,15 @@ public class Vector2D implements Comparable<Vector2D>{
     public int compareTo(Vector2D other) {
         int cmpX = Double.compare(this.x, other.x);
         return (cmpX != 0) ? cmpX : Double.compare(this.y, other.y);
+    }
+
+    @Override
+    public double getX() {
+        return this.x;
+    }
+
+    @Override
+    public double getY() {
+        return this.y;
     }
 }

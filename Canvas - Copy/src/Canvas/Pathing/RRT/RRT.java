@@ -8,7 +8,7 @@ import Canvas.Shapes.Circle;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
 
-public class RRT  extends RRTBase{
+public class RRT  extends RRTHelperBase{
 
     private boolean isFinished = false;
 
@@ -27,17 +27,16 @@ public class RRT  extends RRTBase{
         Node newPoint = getNewPoint(randomPoint, nearestPoint);
 
         if (!collidesObstacle(newPoint) && !isFinished()) {
-            List<Node> nodes = getNodes();
             
             drawing.add(newPoint.getCircle());
             
-            nodes.add(newPoint);
+            this.nodes.add(newPoint);
             
             if (newPoint.distanceTo(getGoal()) < getMinimumDist()) {
                 nodes.add(new Node(getGoal().x, getGoal().y, newPoint));
                 isFinished = true;
                 
-                paths.add(getPath(nodes.get(nodes.size()-1)));
+                paths.add(getPath(new Node(getGoal().x, getGoal().y, newPoint)));
                 vis.add(paths.get(paths.size()-1));
             }
         }

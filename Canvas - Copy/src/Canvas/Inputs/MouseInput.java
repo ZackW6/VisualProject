@@ -19,6 +19,7 @@ public class MouseInput{
     public boolean leftPressed = false;
     public boolean rightPressed = false;
 
+    private VisualJ vis;
     public enum MouseInputs {
         MOUSE_PRESSED(0),
         MOUSE_RELEASED(1),
@@ -69,6 +70,7 @@ public class MouseInput{
     }
 
     public MouseInput(VisualJ canvas){
+        this.vis = canvas;
         for (int i = 0; i<events.length;i++){
             for (int y = 0; y<events[i].length;y++){
                 events[i][y] = new ArrayList<Runnable>();
@@ -176,7 +178,7 @@ public class MouseInput{
     }
 
     public Vector2D getMouseCoords() {
-        return Vector2D.of(mouseCoords.x, mouseCoords.y);
+        return Vector2D.of(mouseCoords.x, vis.HEIGHT - mouseCoords.y);
     }
 
     /**

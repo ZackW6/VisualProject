@@ -145,6 +145,9 @@ public class PolyShape extends Obj{
     }
 
     public boolean moveIndex(Obj object, int index){
+        if (object == null){
+            return false;
+        }
         int currentIndex = shapes.indexOf(object);
         if (currentIndex==-1){
             return false;

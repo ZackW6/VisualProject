@@ -13,18 +13,6 @@ public class InformedRRTStar extends RRTStar{
         super(vis, field);
     }
 
-    @Override
-    public void setGoal(Vector2D goal){
-        super.setGoal(goal);
-        bestCost = Double.POSITIVE_INFINITY;
-    }
-
-    @Override
-    public void setStart(Vector2D start){
-        super.setStart(start);
-        bestCost = Double.POSITIVE_INFINITY;
-    }
-
     /**
      * In this case bias only affect initial goal search, not Informed optimization
      */

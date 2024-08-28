@@ -20,10 +20,11 @@ import Canvas.Inputs.MouseInput.MouseInputs;
 import Canvas.Inputs.MouseInput.MouseSide;
 import Canvas.Pathing.RRT.InformedRRTStar;
 import Canvas.Pathing.RRT.Obstacle;
+import Canvas.Pathing.RRT.PreloadRRT;
 import Canvas.Pathing.RRT.RRT;
-import Canvas.Pathing.RRT.RRTBase;
+import Canvas.Pathing.RRT.RRTHelperBase;
 import Canvas.Pathing.RRT.RRTStar;
-import Canvas.Pathing.RRT.RRTBase.Field;
+import Canvas.Pathing.RRT.RRTHelperBase.Field;
 import Canvas.Shapes.Circle;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.Obj;
@@ -39,6 +40,7 @@ import Canvas.Util.ColorEXT;
 import Canvas.Util.Profile;
 import Canvas.Util.Random;
 import Canvas.Util.Vector2D;
+import Canvas.Pathing.RRT.RRTBase;
 
 class MouseMovingHelper{
     public Vector2D mouseMarkCoords = Vector2D.of(0,0);
@@ -57,7 +59,6 @@ public class App {
     public static Text addingText = new Text(200, 200, 100, Color.RED, "");
 
     
-
     public static void main(String[] args) {
         
         vis = new VisualJ("Simulation",1700,900,Color.black);
@@ -65,29 +66,39 @@ public class App {
         keyboard = new KeyInput(vis);
         
         vis.startThread();
-                
+        
         CommandBase runner = Commands.timed(()->runAll(vis), 10);
         runner.schedule();
-
-        RRTBase rrt = new InformedRRTStar(vis, new Field(0, 0, 1700, 900));
-
         FileParser fileParser = new FileParser("C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
-        List<Obstacle> obstacles = fileParser.loadSquares(rrt, "navgrid");
+        List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
+
+        RRTBase rrt = new PreloadRRT(vis, new Field(0, 0, 1700, 900), List.of());
+        
+        
+
+        // for (int i = 0; i < 1000; i++){
+        //     double x = Random.randDouble(0, 1700);
+        //     double y = Random.randDouble(0, 900);
+
+        //     double width = Random.randDouble(0, 40);
+        //     double height = Random.randDouble(0, 40);
+        //     obstacles.add(new Obstacle(x, y, width, height, true));
+        // }
         rrt.scheduleObstacles(obstacles);
 
-        rrt.setBias(0);
+        rrt.setBias(.3);
         rrt.setMinimumDistance(200);
         rrt.setMaxStepDist(10);
         rrt.scheduleStart(Vector2D.of(850,450));
         rrt.setDrawingCoords(0,0);
-        rrt.scheduleGoal(Vector2D.of(1000,10));
+        rrt.scheduleGoal(Vector2D.of(1000,300));
 
 
-        TimedCommand timedCommand = new TimedCommand(()->{rrt.process();}, 30);
+        TimedCommand timedCommand = new TimedCommand(()->{rrt.process();}, 0);
         timedCommand.schedule();
 
         keyboard.keyPressed("Up").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(0,5);
+            vis.moveFrame(0,-5);
         }),10);
         keyboard.keyPressed("Left").whileTrue(Commands.runOnce(()->{
             vis.moveFrame(5,0);
@@ -96,8 +107,27 @@ public class App {
             vis.moveFrame(-5,0);
         }),10);
         keyboard.keyPressed("Down").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(0,-5);
+            vis.moveFrame(0,5);
         }),10);
+
+        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "AvoidStage"));
+        }));
+
+        keyboard.keyPressed("k").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "navgrid"));
+        }));
+
+        keyboard.keyPressed("l").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
+        }));
+
+        keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
+            Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
+            rrt.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
+        }));
+
+        
 
         // Commands.timed(()->{
         //     vis.setFrame(mouse.getMouseCoords().x-vis.WIDTH/2, mouse.getMouseCoords().y-vis.HEIGHT/2);
@@ -131,13 +161,18 @@ public class App {
         },MouseInputs.MOUSE_RELEASED, MouseSide.LEFT);
 
         mouse.addEvent(()->{
-            for (int i = 0; i < rrt.getObstacles().size(); i++){
-                rrt.getObstacles().get(i).isClicked(mouse.getMouseCoords(), vis);
+            try {
+                for (int i = 0; i < rrt.getObstacles().size(); i++){
+                    rrt.getObstacles().get(i).isClicked(mouse.getMouseCoords(), vis);
+                }
+            } catch (Exception e) {
+                
             }
+            
             
             if (mouseHelperLeft.hasReleased){
                 mouseHelperLeft.mouseMarkCoords = mouse.getMouseCoords();
-                mouseHelperLeft.startMarkCoords = rrt.getGoal();
+                mouseHelperLeft.startMarkCoords = Vector2D.of(rrt.getGoal());
                 mouseHelperLeft.hasReleased = false;
             }
             rrt.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
@@ -152,7 +187,7 @@ public class App {
         mouse.addEvent(()->{
             if (mouseHelperRight.hasReleased){
                 mouseHelperRight.mouseMarkCoords = mouse.getMouseCoords();
-                mouseHelperRight.startMarkCoords = rrt.getStart();
+                mouseHelperRight.startMarkCoords = Vector2D.of(rrt.getStart());
                 mouseHelperRight.hasReleased = false;
             }
             rrt.scheduleStart(Vector2D.of(mouseHelperRight.startMarkCoords.x-(mouseHelperRight.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperRight.startMarkCoords.y-(mouseHelperRight.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));

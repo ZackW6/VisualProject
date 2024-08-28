@@ -8,20 +8,33 @@ public class Profile {
         runs++;
         startTime = System.currentTimeMillis();
     }
+
     public void stop(){
         runs++;
-        total+=getTime();
+        total += getTime();
     }
+
     public double getAverage(){
         return total/runs;
     }
+
     public long getTime(){
         return System.currentTimeMillis()-startTime;
     }
+
     public void reset(){
         runs = 0;
         startTime = 0;
         total = 0;
+    }
+
+    public void nanoStart(){
+        runs++;
+        startTime = System.nanoTime();
+    }
+
+    public long getNanoTime(){
+        return System.nanoTime()-startTime;
     }
 
 }

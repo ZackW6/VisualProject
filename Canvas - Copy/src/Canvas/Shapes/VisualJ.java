@@ -39,6 +39,8 @@ public class VisualJ extends JFrame{
         Graphics2D g2dBuffer = buffer.createGraphics();
         
         g2dBuffer.setColor(getBackground());
+        g2dBuffer.translate(0, HEIGHT);
+        g2dBuffer.scale(1, -1);
         g2dBuffer.fillRect(0, 0, WIDTH, HEIGHT);
         g2dBuffer.translate(WIDTH/2,HEIGHT/2);
         try {
@@ -185,5 +187,9 @@ public class VisualJ extends JFrame{
 
     public double getIterationTime(){
         return lastIterationTime;
+    }
+
+    public Vector2D screenRelativePoint(Vector2D point){
+        return Vector2D.of((point.x-WIDTH/2)*1/getZoom()+WIDTH/2 - getFrameMove().x,(point.y-HEIGHT/2)*1/getZoom()+HEIGHT/2 - getFrameMove().y);
     }
 }
