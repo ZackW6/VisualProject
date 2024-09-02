@@ -18,6 +18,7 @@ import Canvas.Inputs.KeyInput;
 import Canvas.Inputs.MouseInput;
 import Canvas.Inputs.MouseInput.MouseInputs;
 import Canvas.Inputs.MouseInput.MouseSide;
+import Canvas.Pathing.RRT.BetterPreloadRRT;
 import Canvas.Pathing.RRT.InformedRRTStar;
 import Canvas.Pathing.RRT.Obstacle;
 import Canvas.Pathing.RRT.PreloadRRT;
@@ -72,7 +73,7 @@ public class App {
         FileParser fileParser = new FileParser("C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
         List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
 
-        RRTBase rrt = new PreloadRRT(vis, new Field(0, 0, 1700, 900), List.of());
+        RRTBase rrt = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), obstacles);
         
         
 
@@ -84,14 +85,14 @@ public class App {
         //     double height = Random.randDouble(0, 40);
         //     obstacles.add(new Obstacle(x, y, width, height, true));
         // }
-        rrt.scheduleObstacles(obstacles);
+        // rrt.scheduleObstacles(obstacles);
 
-        rrt.setBias(.3);
-        rrt.setMinimumDistance(200);
-        rrt.setMaxStepDist(10);
-        rrt.scheduleStart(Vector2D.of(850,450));
-        rrt.setDrawingCoords(0,0);
-        rrt.scheduleGoal(Vector2D.of(1000,300));
+        // rrt.setBias(.3);
+        // rrt.setMinimumDistance(200);
+        // rrt.setMaxStepDist(10);
+        // rrt.scheduleStart(Vector2D.of(850,450));
+        // rrt.setDrawingCoords(0,0);
+        // rrt.scheduleGoal(Vector2D.of(1000,300));
 
 
         TimedCommand timedCommand = new TimedCommand(()->{rrt.process();}, 0);
@@ -125,6 +126,10 @@ public class App {
         keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
             Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
             rrt.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
+        }));
+
+        keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
+            rrt.removeObstacles(List.of(rrt.getObstacles().get(0)));
         }));
 
         

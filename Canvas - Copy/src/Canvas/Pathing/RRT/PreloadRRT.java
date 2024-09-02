@@ -17,8 +17,8 @@ public class PreloadRRT implements RRTBase{
 
     KDTree<ModifiedNode> allNodes = new KDTree<ModifiedNode>();
 
-    KDTree<Obstacle> obstacles = new KDTree<>();
-    ArrayList<Obstacle> wholeObstacles = new ArrayList<>();
+    KDTree<ModifiedObstacle> obstacles = new KDTree<>();
+    ArrayList<ModifiedObstacle> wholeObstacles = new ArrayList<>();
 
     ModifiedNode start = new ModifiedNode(850,450);
     ModifiedNode goal = new ModifiedNode(850,450);
@@ -34,7 +34,7 @@ public class PreloadRRT implements RRTBase{
     class ModifiedNode extends Node{
 
         ArrayList<ModifiedNode> visibleNodes = new ArrayList<>();
-        Obstacle parentObstacle = null;
+        ModifiedObstacle parentObstacle = null;
         public ModifiedNode(double x, double y) {
             super(x, y);
         }
@@ -57,11 +57,26 @@ public class PreloadRRT implements RRTBase{
 
     }
 
+    class ModifiedObstacle extends Obstacle{
+        public ArrayList<ModifiedNode> removedNodes = new ArrayList<>();
+        public ArrayList<ModifiedNode> childNodes = new ArrayList<>();
+        public ModifiedObstacle(double X, double Y, double Width, double Height, boolean currentObstacle) {
+            super(X, Y, Width, Height, currentObstacle);
+        }
+        public ModifiedObstacle(Obstacle obstacle) {
+            super(obstacle.getX(), obstacle.getY(), obstacle.getWidth(), obstacle.getHeight(), obstacle.isObstacle());
+        }
+    }
+
     public PreloadRRT(VisualJ vis, Field field, List<Obstacle> obstacles) {
 
-        wholeObstacles = new ArrayList<>(obstacles);
-        ArrayList<Obstacle> workingObstacles = new ArrayList<>();
-        for (Obstacle obstacle : obstacles){
+        wholeObstacles = new ArrayList<>();
+        for (Obstacle obstacle : obstacles) {
+            wholeObstacles.add(new ModifiedObstacle(obstacle));
+        }
+        
+        ArrayList<ModifiedObstacle> workingObstacles = new ArrayList<>();
+        for (ModifiedObstacle obstacle : wholeObstacles){
             if (obstacle.isObstacle()){
                 workingObstacles.add(obstacle);
             }
@@ -70,7 +85,7 @@ public class PreloadRRT implements RRTBase{
         this.drawing = new PolyShape(0, 0);
         vis.add(drawing);
 
-        drawing.getArray().addAll(obstacles);
+        drawing.getArray().addAll(wholeObstacles);
         this.obstacles.addAll(workingObstacles);
 
         if (!collidesObstacle(start, start)){
@@ -81,7 +96,7 @@ public class PreloadRRT implements RRTBase{
             allNodes.add(goal);
         }
 
-        for (Obstacle obstacle : workingObstacles){
+        for (ModifiedObstacle obstacle : workingObstacles){
             List<ModifiedNode> workableNodes = findCornerNodes(obstacle);
             allNodes.addAll(workableNodes);
         }
@@ -112,32 +127,36 @@ public class PreloadRRT implements RRTBase{
         // drawing.add(paths.get(0));
     }
 
-    public List<ModifiedNode> findCornerNodes(Obstacle obstacle){
+    public List<ModifiedNode> findCornerNodes(ModifiedObstacle obstacle){
         Vector2D corner1 = obstacle.getCoords();
         Vector2D corner2 = new Vector2D(corner1.x + obstacle.getWidth(), corner1.y);
         Vector2D corner3 = new Vector2D(corner1.x, corner1.y + obstacle.getHeight());
         Vector2D corner4 = new Vector2D(corner1.x + obstacle.getWidth(), corner1.y + obstacle.getHeight());
         ArrayList<ModifiedNode> workingNodes = new ArrayList<>();
 
+        ModifiedNode node1 = new ModifiedNode(corner1.add(Vector2D.of(-.001,-.001)));
+        obstacle.childNodes.add(node1);
+        node1.parentObstacle = obstacle;
         if (!collidesObstacle(new Node(corner1.add(Vector2D.of(-.001,-.001))), new Node(corner1.add(Vector2D.of(-.001,-.001))))){
-            ModifiedNode node = new ModifiedNode(corner1.add(Vector2D.of(-.001,-.001)));
-            node.parentObstacle = obstacle;
-            workingNodes.add(node);
+            workingNodes.add(node1);
         }
+        ModifiedNode node2 = new ModifiedNode(corner2.add(Vector2D.of(.001,-.001)));
+            obstacle.childNodes.add(node2);
+            node2.parentObstacle = obstacle;
         if (!collidesObstacle(new Node(corner2.add(Vector2D.of(.001,-.001))), new Node(corner2.add(Vector2D.of(.001,-.001))))){
-            ModifiedNode node = new ModifiedNode(corner2.add(Vector2D.of(.001,-.001)));
-            node.parentObstacle = obstacle;
-            workingNodes.add(node);
+            workingNodes.add(node2);
         }
+        ModifiedNode node3 = new ModifiedNode(corner3.add(Vector2D.of(-.001,.001)));
+            obstacle.childNodes.add(node3);
+            node3.parentObstacle = obstacle;
         if (!collidesObstacle(new Node(corner3.add(Vector2D.of(-.001,.001))), new Node(corner3.add(Vector2D.of(-.001,.001))))){
-            ModifiedNode node = new ModifiedNode(corner3.add(Vector2D.of(-.001,.001)));
-            node.parentObstacle = obstacle;
-            workingNodes.add(node);
+            workingNodes.add(node3);
         }
+        ModifiedNode node4 = new ModifiedNode(corner4.add(Vector2D.of(.001,.001)));
+        obstacle.childNodes.add(node4);
+        node4.parentObstacle = obstacle;
         if (!collidesObstacle(new Node(corner4.add(Vector2D.of(.001,.001))), new Node(corner4.add(Vector2D.of(.001,.001))))){
-            ModifiedNode node = new ModifiedNode(corner4.add(Vector2D.of(.001,.001)));
-            node.parentObstacle = obstacle;
-            workingNodes.add(node);
+            workingNodes.add(node4);
         }
         return workingNodes;
 
@@ -195,61 +214,6 @@ public class PreloadRRT implements RRTBase{
         bestCost = goal.getCost();
     }
 
-    protected boolean collidesObstacle(Node point) {
-        if (point.getParent() == null){
-            System.out.println("INCORRECT USE OF OBSTACLES, CHECK RRTHelperBASE 114");
-            return true;
-        }
-
-        if (obstacles.getRoot() == null){
-            return false;
-        }
-
-        double[] obstacleDimensions = new double[]{0,0};
-        obstacles.traverseNodes(obstacle -> {
-            if (obstacle.getWidth() > obstacleDimensions[0]){
-                obstacleDimensions[0] = obstacle.getWidth();
-            }
-            if (obstacle.getHeight() > obstacleDimensions[1]){
-                obstacleDimensions[1] = obstacle.getHeight();
-            }
-        });
-        
-        Vector2D upperBound;
-        Vector2D lowerBound;
-        if (point.x > point.getParent().x){
-            if (point.y > point.getParent().y){
-                upperBound = point;
-                lowerBound = point.getParent();
-            }else{
-                upperBound = Vector2D.of(point.x, point.getParent().y);
-                lowerBound = Vector2D.of(point.getParent().x, point.y);
-            }
-            
-        }else{
-            if (point.y > point.getParent().y){
-                upperBound = Vector2D.of(point.getParent().x, point.y);
-                lowerBound = Vector2D.of(point.x, point.getParent().y);
-            }else{
-                lowerBound = point;
-                upperBound = point.getParent();
-            }
-        }
-        
-        for (Obstacle obstacle : obstacles.findInRange(
-            Vector2D.of(lowerBound.x - obstacleDimensions[0]
-            , lowerBound.y - obstacleDimensions[1]), Vector2D.of(upperBound.x+obstacleDimensions[0],upperBound.y+obstacleDimensions[1]))) {
-            if (obstacle.didCollide(point, point.getParent())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected boolean collidesObstacle(Node one, Node two) {
-        return collidesObstacle(new Node(one, two));
-    }
-
     public PolyShape getPath(Node nodePathEnd){
         Node activeNode = new Node(nodePathEnd);
         PolyShape poly = new PolyShape(0, 0);
@@ -265,8 +229,6 @@ public class PreloadRRT implements RRTBase{
             i++;
         }
         return poly;
-
-        
     }
 
     @Override
@@ -289,17 +251,20 @@ public class PreloadRRT implements RRTBase{
      */
     @Override
     public void setObstacles(List<Obstacle> obstacles) {
-        wholeObstacles = new ArrayList<>(obstacles);
+        wholeObstacles = new ArrayList<>();
+        for (Obstacle obstacle : obstacles){
+            wholeObstacles.add(new ModifiedObstacle(obstacle));
+        }
         drawing.getArray().clear();
         allNodes.clear();
         this.obstacles.clear();
-        ArrayList<Obstacle> workingObstacles = new ArrayList<>();
-        for (Obstacle obstacle : obstacles){
+        ArrayList<ModifiedObstacle> workingObstacles = new ArrayList<>();
+        for (ModifiedObstacle obstacle : wholeObstacles){
             if (obstacle.isObstacle()){
                 workingObstacles.add(obstacle);
             }
         }
-        drawing.getArray().addAll(obstacles);
+        drawing.getArray().addAll(wholeObstacles);
         this.obstacles.addAll(workingObstacles);
 
         // if (!collidesObstacle(start, start)){
@@ -310,7 +275,7 @@ public class PreloadRRT implements RRTBase{
             allNodes.add(goal);
         // }
 
-        for (Obstacle obstacle : workingObstacles){
+        for (ModifiedObstacle obstacle : workingObstacles){
             List<ModifiedNode> workableNodes = findCornerNodes(obstacle);
             allNodes.addAll(workableNodes);
         }
@@ -357,6 +322,9 @@ public class PreloadRRT implements RRTBase{
     }
 
     private void addObstacle(Obstacle obstacle){
+
+        ModifiedObstacle newObstacle = new ModifiedObstacle(obstacle);
+
         for (ModifiedNode node : allNodes.toList()){
             List<ModifiedNode> toRemove = new ArrayList<>();
 
@@ -364,6 +332,7 @@ public class PreloadRRT implements RRTBase{
                 if (!node.equals(goal) && !node.equals(start)){
                     allNodes.remove(node);
                     drawing.remove(node.getObj());
+                    newObstacle.removedNodes.add(node);
                 }
                 
                 for (ModifiedNode nodeR : node.visibleNodes){
@@ -380,13 +349,12 @@ public class PreloadRRT implements RRTBase{
                 }
             }
             node.visibleNodes.removeAll(toRemove);
-            
         }
-        wholeObstacles.add(obstacle);
-        obstacles.add(obstacle);
+        wholeObstacles.add(newObstacle);
+        obstacles.add(newObstacle);
         drawing.add(obstacle);
 
-        List<ModifiedNode> workingNodes = findCornerNodes(obstacle);
+        List<ModifiedNode> workingNodes = findCornerNodes(newObstacle);
         allNodes.addAll(workingNodes);
         for (ModifiedNode node : workingNodes){
             drawing.add(node.getCircle());
@@ -407,49 +375,43 @@ public class PreloadRRT implements RRTBase{
     @Override
     public void removeObstacles(List<Obstacle> obstacles) {
         for (Obstacle obstacle : obstacles){
-            removeObstacle(obstacle);
+            removeObstacle((ModifiedObstacle)obstacle);
         }
     }
 
-    private void removeObstacle(Obstacle obstacle){
-        // for (ModifiedNode node : allNodes.toList()){
-        //     List<ModifiedNode> toRemove = new ArrayList<>();
+    private void removeObstacle(ModifiedObstacle obstacle){
 
-        //     if (obstacle.didCollide(node, node)){
-        //         if (!node.equals(goal) && !node.equals(start)){
-        //             allNodes.remove(node);
-        //             drawing.remove(node.getObj());
-        //         }
-                
-        //         for (ModifiedNode nodeR : node.visibleNodes){
-        //             nodeR.removeVisibleNode(node);
-        //         }
-        //         continue;
+        // drawing.remove(obstacle);
+        // obstacles.remove(obstacle);
+        // wholeObstacles.remove(obstacle);
+        // allNodes.removeAll(obstacle.childNodes);
+        
+
+        // for (ModifiedNode node : obstacle.childNodes){
+        //     drawing.remove(node.getObj());
+        //     for (ModifiedNode nodeR : node.visibleNodes){
+        //         nodeR.removeVisibleNode(node);
         //     }
-        //     for (ModifiedNode visible : node.visibleNodes){
-        //         if (obstacle.didCollide(node, visible)){
-        //             visible.visibleNodes.remove(node);
-        //             toRemove.add(visible);
-        //             node.setParent(null);
-        //             visible.setParent(null);
+        // }
+
+        // ArrayList<ModifiedNode> reAdd = new ArrayList<>();
+        // for (ModifiedObstacle obstacle2 : obstacles.findKNearest(obstacle, 10)){
+        //     for (ModifiedNode node : obstacle2.childNodes){
+        //         if (obstacles.search(node.parentObstacle) != null && !collidesObstacle(node, node)){
+        //             reAdd.add(node);
+        //             allNodes.add(node);
         //         }
         //     }
-        //     node.visibleNodes.removeAll(toRemove);
             
         // }
-        // wholeObstacles.add(obstacle);
-        // obstacles.add(obstacle);
-        // drawing.add(obstacle);
 
-        // List<ModifiedNode> workingNodes = findCornerNodes(obstacle);
-        // allNodes.addAll(workingNodes);
-        // for (ModifiedNode node : workingNodes){
+        // for (ModifiedNode node : reAdd){
         //     drawing.add(node.getCircle());
         //     node.getCircle().setColor(Color.GREEN);
         //     for (ModifiedNode potentialVis : allNodes.toList()){
         //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
         //             node.addVisibleNode(potentialVis);
-        //             if (!workingNodes.contains(potentialVis)){
+        //             if (!reAdd.contains(potentialVis)){
         //                 potentialVis.addVisibleNode(node);
         //             }
         //         }
@@ -517,7 +479,11 @@ public class PreloadRRT implements RRTBase{
 
     @Override
     public List<Obstacle> getObstacles() {
-        return obstacles.toList();
+        ArrayList<Obstacle> list = new ArrayList<>();
+        for (Obstacle obstacle : obstacles.toList()){
+            list.add(obstacle);
+        }
+        return list;
     }
 
     /**
@@ -567,6 +533,13 @@ public class PreloadRRT implements RRTBase{
     @Override
     public double getBias() {
         return 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public KDTree<Obstacle> getKDTreeObstacles(){
+        KDTree<? extends Obstacle> list = (KDTree<? extends Obstacle>)obstacles;
+        return (KDTree<Obstacle>) list;
     }
     
 }

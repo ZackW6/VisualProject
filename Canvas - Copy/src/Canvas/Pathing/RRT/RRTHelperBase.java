@@ -107,54 +107,6 @@ public abstract class RRTHelperBase implements RRTBase{
         return new Node(newX, newY, nearest);
     }
 
-    protected boolean collidesObstacle(Node point) {
-        if (point.getParent() == null){
-            System.out.println("INCORRECT USE OF OBSTACLES, CHECK RRTBASE 114");
-            return true;
-        }
-
-        if (obstacles.getRoot() == null){
-            return false;
-        }
-
-        double obstacleWidth = obstacles.getRoot().getCorrisponding().getWidth();
-        double obstacleHeight = obstacles.getRoot().getCorrisponding().getHeight();
-        Vector2D upperBound;
-        Vector2D lowerBound;
-        if (point.x > point.getParent().x){
-            if (point.y > point.getParent().y){
-                upperBound = point;
-                lowerBound = point.getParent();
-            }else{
-                upperBound = Vector2D.of(point.x, point.getParent().y);
-                lowerBound = Vector2D.of(point.getParent().x, point.y);
-            }
-            
-        }else{
-            if (point.y > point.getParent().y){
-                upperBound = Vector2D.of(point.getParent().x, point.y);
-                lowerBound = Vector2D.of(point.x, point.getParent().y);
-            }else{
-                lowerBound = point;
-                upperBound = point.getParent();
-            }
-        }
-        
-        for (Obstacle obstacle : obstacles.findInRange(
-            Vector2D.of(lowerBound.x - obstacleWidth
-            , lowerBound.y - obstacleHeight), Vector2D.of(upperBound.x+obstacleWidth,upperBound.y+obstacleHeight))) {
-        // for (Obstacle obstacle : obstacles.toList()){
-            if (obstacle.didCollide(point, point.getParent())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    protected boolean collidesObstacle(Node one, Node two) {
-        return collidesObstacle(new Node(one, two));
-    }
-
     public void scheduleObstacles(List<Obstacle> obstacles){
         initActions[0] = ()->{setObstacles(obstacles);};
     }
@@ -261,6 +213,11 @@ public abstract class RRTHelperBase implements RRTBase{
 
     public double getBias(){
         return bias;
+    }
+
+    @Override
+    public KDTree<Obstacle> getKDTreeObstacles(){
+        return obstacles;
     }
     
     public record Field(double x, double y, double width, double height){};

@@ -140,6 +140,10 @@ public class KDTree<T extends Point> {
             return null; // Target not found
         }
 
+        if (target == null){
+            return null;
+        }
+
         if (node.point.equals(target)) {
             return node.point; // Target found
         }
