@@ -46,6 +46,7 @@ import Canvas.Pathing.RRT.RRTBase;
 class MouseMovingHelper{
     public Vector2D mouseMarkCoords = Vector2D.of(0,0);
     public Vector2D startMarkCoords = Vector2D.of(0,0);
+    public Vector2D startFrameMove = Vector2D.of(0,0);
     public boolean hasReleased = true;
 }
 
@@ -99,16 +100,16 @@ public class App {
         timedCommand.schedule();
 
         keyboard.keyPressed("Up").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(0,-5);
+            vis.moveFrame(0,-5/vis.getZoom());
         }),10);
         keyboard.keyPressed("Left").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(5,0);
+            vis.moveFrame(5/vis.getZoom(),0);
         }),10);
         keyboard.keyPressed("Right").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(-5,0);
+            vis.moveFrame(-5/vis.getZoom(),0);
         }),10);
         keyboard.keyPressed("Down").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(0,5);
+            vis.moveFrame(0,5/vis.getZoom());
         }),10);
 
         keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
@@ -166,24 +167,19 @@ public class App {
         },MouseInputs.MOUSE_RELEASED, MouseSide.LEFT);
 
         mouse.addEvent(()->{
-            try {
-                for (int i = 0; i < rrt.getObstacles().size(); i++){
-                    rrt.getObstacles().get(i).isClicked(mouse.getMouseCoords(), vis);
-                }
-            } catch (Exception e) {
-                
-            }
-            
-            
             if (mouseHelperLeft.hasReleased){
                 mouseHelperLeft.mouseMarkCoords = mouse.getMouseCoords();
                 mouseHelperLeft.startMarkCoords = Vector2D.of(rrt.getGoal());
                 mouseHelperLeft.hasReleased = false;
+                mouseHelperLeft.startFrameMove = vis.getFrameMove();
             }
-            rrt.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
+            rrt.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x + (vis.getFrameMove().x - mouseHelperLeft.startFrameMove.x))*1/vis.getZoom()
+                ,mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
             // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
         },MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
-
+        CommandBase mouseInputCommand = new TimedCommand(()->{
+            
+        }, 0);
         MouseMovingHelper mouseHelperRight = new MouseMovingHelper();
         mouse.addEvent(()->{
             mouseHelperRight.hasReleased = true;

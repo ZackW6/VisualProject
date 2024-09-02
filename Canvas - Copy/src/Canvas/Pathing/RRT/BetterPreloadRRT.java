@@ -101,98 +101,8 @@ public class BetterPreloadRRT implements RRTBase{
         bestCost = goal.getCost();
     }
 
-    public List<Obstacle> simplifyObstacles(List<Obstacle> obstacles){
-        if (obstacles.size() == 0){
-            return List.of();
-        }
-        ArrayList<ArrayList<Obstacle>> obstacleFiles = new ArrayList<>();
-        obstacleFiles.add(new ArrayList<>());
-        for (Obstacle obstacle : obstacles){
-            System.out.println(obstacle.getX());
-            if (!obstacle.isObstacle()){
-                continue;
-            }
-            ArrayList<Obstacle> recentObstacleFile = obstacleFiles.get(obstacleFiles.size()-1);
-            if (recentObstacleFile.size() == 0){
-                recentObstacleFile.add(obstacle);
-                continue;
-            }
-            
-            Obstacle newestObstacle = recentObstacleFile.get(recentObstacleFile.size()-1);
-            
-            if (newestObstacle.getY() == obstacle.getY() && Math.abs(newestObstacle.getX() + newestObstacle.getWidth()-obstacle.getX()) <.1 ){
-                recentObstacleFile.add(obstacle);
-            }else{
-                ArrayList<Obstacle> tempList = new ArrayList<>();
-                tempList.add(obstacle);
-                obstacleFiles.add(tempList);
-            }
-        }
-        System.out.println(obstacleFiles.size());
-
-        ArrayList<Obstacle> newObstacles = new ArrayList<>();
-        for (ArrayList<Obstacle> fileObstacles: obstacleFiles){
-            if (fileObstacles.size() == 0){
-                continue;
-            }
-            Obstacle beginObstacle = fileObstacles.get(0);
-            Obstacle endObstacle = fileObstacles.get(fileObstacles.size()-1);
-            newObstacles.add(new Obstacle(beginObstacle.getX()
-            , beginObstacle.getY()
-            , endObstacle.getX()+endObstacle.getWidth()
-             - beginObstacle.getX(),beginObstacle.getHeight(), true));
-            // drawing.add(newObstacles.get(newObstacles.size()-1));
-        }
-
-        ArrayList<Obstacle> finalObstacles = new ArrayList<>();
-        obstacleFiles = new ArrayList<>();
-        obstacleFiles.add(new ArrayList<>());
-        newObstacles.sort(new Comparator<Obstacle>() {
-            @Override
-            public int compare(Obstacle item1, Obstacle item2) {
-                if (item1.getX() == item2.getX()){
-                    return Double.compare(item1.getY(), item2.getY());
-                }
-                return Double.compare(item1.getX(), item2.getX());
-            }
-        });
-        for (Obstacle obstacle : newObstacles){
-            ArrayList<Obstacle> recentObstacleFile = obstacleFiles.get(obstacleFiles.size()-1);
-            if (recentObstacleFile.size() == 0){
-                recentObstacleFile.add(obstacle);
-                continue;
-            }
-            Obstacle newestObstacle = recentObstacleFile.get(recentObstacleFile.size()-1);
-            
-            if (newestObstacle.getX() == obstacle.getX()
-                    && Math.abs(newestObstacle.getY() + newestObstacle.getHeight()-obstacle.getY()) <.1
-                    && newestObstacle.getWidth() == obstacle.getWidth()){
-
-                recentObstacleFile.add(obstacle);
-            }else{
-                ArrayList<Obstacle> tempList = new ArrayList<>();
-                tempList.add(obstacle);
-                obstacleFiles.add(tempList);
-            }
-        }
-
-        for (ArrayList<Obstacle> fileObstacles: obstacleFiles){
-            if (fileObstacles.size() == 0){
-                continue;
-            }
-            Obstacle beginObstacle = fileObstacles.get(0);
-            Obstacle endObstacle = fileObstacles.get(fileObstacles.size()-1);
-            finalObstacles.add(new Obstacle(beginObstacle.getX()
-            , beginObstacle.getY()
-            , endObstacle.getWidth()
-            , endObstacle.getY() - beginObstacle.getY() + beginObstacle.getHeight(), true));
-            // drawing.add(finalObstacles.get(finalObstacles.size()-1));
-        }
-        return finalObstacles;
-    }
-
     @Override
-    public void setStart(Vector2D start) {
+    public synchronized void setStart(Vector2D start) {
         this.start.setPosition(start.x, start.y);
         nodes.get(this.start).clear();
         nodes.forEach((node, visibleNodes)->{
@@ -212,7 +122,7 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     @Override
-    public void setGoal(Vector2D goal) {
+    public synchronized void setGoal(Vector2D goal) {
         this.goal.setPosition(goal.x, goal.y);
         nodes.get(this.goal).clear();
         this.goal.setParent(null);
@@ -234,19 +144,18 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     /**
-     * in this case it is a complete reset, so only use when changing the map completely
+     * in this case it is a complete reset, but it is fast enough that if you are using a grid based obstacle system you should use this
      */
     @Override
-    public void setObstacles(List<Obstacle> obstacles) {
-        
+    public synchronized void setObstacles(List<Obstacle> obstacles) {
         staticObstacles.clear();
         nodes.clear();
         this.obstacles.clear();
         dynamicObstacles.clear();
         drawing.getArray().clear();
+        
         path = null;
         staticObstacles = new ArrayList<>(simplifyObstacles(obstacles));
-        System.out.println(staticObstacles.size());
         drawing.getArray().addAll(staticObstacles);
 
         if (staticObstacles.size() == 0){
@@ -267,13 +176,10 @@ public class BetterPreloadRRT implements RRTBase{
         this.obstacles.add(closest);
         this.obstacles.addAll(mixedObstacles);
 
-        // if (!collidesObstacle(start, start)){
-            nodes.put(start, new ArrayList<>());
-        // }
+        nodes.put(start, new ArrayList<>());
 
-        // if (!collidesObstacle(goal, goal)){
-            nodes.put(goal, new ArrayList<>());
-        // }
+        nodes.put(goal, new ArrayList<>());
+        goal.setParent(null);
 
         for (Obstacle obstacle : staticObstacles){
             List<Node> workableNodes = findCornerNodes(obstacle);
@@ -298,7 +204,6 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public void process() {
-        // System.out.println(nodes.containsKey(goal));
         // TODO Auto-generated method stub
     }
 
@@ -318,33 +223,42 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     @Override
-    public void addObstacles(List<Obstacle> obstacles) {
+    public synchronized void addObstacles(List<Obstacle> obstacles) {
         // TODO Auto-generated method stub
     }
 
     @Override
-    public void removeObstacles(List<Obstacle> obstacles) {
+    public synchronized void removeObstacles(List<Obstacle> obstacles) {
         // TODO Auto-generated method stub
     }
 
+    /**
+     * useless here
+     */
     @Override
     public void setMinimumDistance(double dist) {
-        // TODO Auto-generated method stub
+        
     }
 
+    /**
+     * useless here
+     */
     @Override
     public void setMaxStepDist(double dist) {
-        // TODO Auto-generated method stub
+        
     }
 
     @Override
     public void setDrawingCoords(double x, double y) {
-        // TODO Auto-generated method stub
+        drawing.setPosition(x,y);
     }
 
+    /**
+     * useless here
+     */
     @Override
     public void setBias(double bias) {
-        // TODO Auto-generated method stub
+        
     }
 
     @Override
@@ -354,8 +268,7 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public List<Obstacle> getObstacles() {
-        // TODO Auto-generated method stub
-        return List.of();
+        return obstacles.toList();
     }
 
     @Override
@@ -365,8 +278,7 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public List<Node> getNodes() {
-        // TODO Auto-generated method stub
-        return List.of();
+        return List.copyOf(nodes.keySet());
     }
 
     @Override
@@ -379,27 +291,32 @@ public class BetterPreloadRRT implements RRTBase{
         return goal;
     }
 
+    /**
+     * useless in this
+     */
     @Override
     public double getMinimumDist() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
+    /**
+     * useless in this
+     */
     @Override
     public double getMaxStepSize() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public Vector2D getDrawingCoords() {
-        // TODO Auto-generated method stub
-        return new Vector2D();
+        return drawing.getCoords();
     }
 
+    /**
+     * useless in this
+     */
     @Override
     public double getBias() {
-        // TODO Auto-generated method stub
         return 0;
     }
     

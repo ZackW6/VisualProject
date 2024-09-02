@@ -69,7 +69,6 @@ public class PreloadRRT implements RRTBase{
     }
 
     public PreloadRRT(VisualJ vis, Field field, List<Obstacle> obstacles) {
-
         wholeObstacles = new ArrayList<>();
         for (Obstacle obstacle : obstacles) {
             wholeObstacles.add(new ModifiedObstacle(obstacle));

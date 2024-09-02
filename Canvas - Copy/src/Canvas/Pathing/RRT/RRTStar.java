@@ -158,8 +158,7 @@ public class RRTStar extends RRTHelperBase {
     }
 
     @Override
-    public
-    synchronized void setGoal(Vector2D goal){
+    public synchronized void setGoal(Vector2D goal){
         bestCost = Double.POSITIVE_INFINITY;
         this.goal.setPosition(goal.x, goal.y);
         for (Node node : getNearbyNodes(this.goal)){
@@ -180,8 +179,7 @@ public class RRTStar extends RRTHelperBase {
     }
 
     @Override
-    public
-    synchronized void setObstacles(List<Obstacle> obstacles) {
+    public synchronized void setObstacles(List<Obstacle> obstacles) {
         super.setObstacles(obstacles);
         bestCost = Double.POSITIVE_INFINITY;
         goal.setParent(null);
@@ -192,8 +190,7 @@ public class RRTStar extends RRTHelperBase {
     }
 
     @Override
-    public
-    synchronized void setStart(Vector2D start){
+    public synchronized void setStart(Vector2D start){
         // LinkedList<Node> keepNodes = new LinkedList<>(nodes.toList());
         // keepNodes.remove(this.start);
         goal.setParent(null);

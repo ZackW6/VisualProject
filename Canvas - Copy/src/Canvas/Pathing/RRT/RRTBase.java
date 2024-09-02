@@ -2,6 +2,7 @@ package Canvas.Pathing.RRT;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
@@ -156,6 +157,94 @@ public interface RRTBase {
 
     public default boolean collidesObstacle(Node one, Node two) {
         return collidesObstacle(new Node(one, two));
+    }
+
+    public default List<Obstacle> simplifyObstacles(List<Obstacle> obstacles){
+        if (obstacles.size() == 0){
+            return List.of();
+        }
+        ArrayList<ArrayList<Obstacle>> obstacleFiles = new ArrayList<>();
+        obstacleFiles.add(new ArrayList<>());
+        for (Obstacle obstacle : obstacles){
+            if (!obstacle.isObstacle()){
+                continue;
+            }
+            ArrayList<Obstacle> recentObstacleFile = obstacleFiles.get(obstacleFiles.size()-1);
+            if (recentObstacleFile.size() == 0){
+                recentObstacleFile.add(obstacle);
+                continue;
+            }
+            
+            Obstacle newestObstacle = recentObstacleFile.get(recentObstacleFile.size()-1);
+            
+            if (newestObstacle.getY() == obstacle.getY() && Math.abs(newestObstacle.getX() + newestObstacle.getWidth()-obstacle.getX()) <.1 ){
+                recentObstacleFile.add(obstacle);
+            }else{
+                ArrayList<Obstacle> tempList = new ArrayList<>();
+                tempList.add(obstacle);
+                obstacleFiles.add(tempList);
+            }
+        }
+
+        ArrayList<Obstacle> newObstacles = new ArrayList<>();
+        for (ArrayList<Obstacle> fileObstacles: obstacleFiles){
+            if (fileObstacles.size() == 0){
+                continue;
+            }
+            Obstacle beginObstacle = fileObstacles.get(0);
+            Obstacle endObstacle = fileObstacles.get(fileObstacles.size()-1);
+            newObstacles.add(new Obstacle(beginObstacle.getX()
+            , beginObstacle.getY()
+            , endObstacle.getX()+endObstacle.getWidth()
+             - beginObstacle.getX(),beginObstacle.getHeight(), true));
+            // drawing.add(newObstacles.get(newObstacles.size()-1));
+        }
+
+        ArrayList<Obstacle> finalObstacles = new ArrayList<>();
+        obstacleFiles = new ArrayList<>();
+        obstacleFiles.add(new ArrayList<>());
+        newObstacles.sort(new Comparator<Obstacle>() {
+            @Override
+            public int compare(Obstacle item1, Obstacle item2) {
+                if (item1.getX() == item2.getX()){
+                    return Double.compare(item1.getY(), item2.getY());
+                }
+                return Double.compare(item1.getX(), item2.getX());
+            }
+        });
+        for (Obstacle obstacle : newObstacles){
+            ArrayList<Obstacle> recentObstacleFile = obstacleFiles.get(obstacleFiles.size()-1);
+            if (recentObstacleFile.size() == 0){
+                recentObstacleFile.add(obstacle);
+                continue;
+            }
+            Obstacle newestObstacle = recentObstacleFile.get(recentObstacleFile.size()-1);
+            
+            if (newestObstacle.getX() == obstacle.getX()
+                    && Math.abs(newestObstacle.getY() + newestObstacle.getHeight()-obstacle.getY()) <.1
+                    && newestObstacle.getWidth() == obstacle.getWidth()){
+
+                recentObstacleFile.add(obstacle);
+            }else{
+                ArrayList<Obstacle> tempList = new ArrayList<>();
+                tempList.add(obstacle);
+                obstacleFiles.add(tempList);
+            }
+        }
+
+        for (ArrayList<Obstacle> fileObstacles: obstacleFiles){
+            if (fileObstacles.size() == 0){
+                continue;
+            }
+            Obstacle beginObstacle = fileObstacles.get(0);
+            Obstacle endObstacle = fileObstacles.get(fileObstacles.size()-1);
+            finalObstacles.add(new Obstacle(beginObstacle.getX()
+            , beginObstacle.getY()
+            , endObstacle.getWidth()
+            , endObstacle.getY() - beginObstacle.getY() + beginObstacle.getHeight(), true));
+            // drawing.add(finalObstacles.get(finalObstacles.size()-1));
+        }
+        return finalObstacles;
     }
 
 }
