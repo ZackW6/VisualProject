@@ -6,9 +6,9 @@
     "configurations": [
         {
             "type": "java",
-            "name": "RangeList",
+            "name": "App2",
             "request": "launch",
-            "mainClass": "Canvas.Util.RangeList",
+            "mainClass": "App2",
             "projectName": "VisualProject_a746e525"
         },
         {

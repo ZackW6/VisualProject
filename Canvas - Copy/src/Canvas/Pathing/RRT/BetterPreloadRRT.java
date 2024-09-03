@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import Canvas.Pathing.RRT.PreloadRRT.ModifiedNode;
-import Canvas.Pathing.RRT.PreloadRRT.ModifiedObstacle;
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
 import Canvas.Shapes.Line;
 import Canvas.Shapes.PolyShape;
@@ -22,13 +20,12 @@ public class BetterPreloadRRT implements RRTBase{
 
 
     ArrayList<Obstacle> staticObstacles = new ArrayList<>();
-    ArrayList<Obstacle> dynamicObstacles = new ArrayList<>();
+    HashMap<Obstacle, ArrayList<Node>[]> dynamicObstacles = new HashMap<>();
 
     KDTree<Obstacle> obstacles = new KDTree<>();
 
     HashMap<Node, ArrayList<Node>> nodes = new HashMap<>();
-    HashMap<Obstacle, ArrayList<Node[]>> brokenNodes = new HashMap<>();
-
+    
     PolyShape drawing = new PolyShape(0, 0);
     Field field;
     PolyShape path = null;
@@ -223,13 +220,115 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     @Override
-    public synchronized void addObstacles(List<Obstacle> obstacles) {
-        // TODO Auto-generated method stub
+    public void addObstacles(List<Obstacle> obstacles) {
+        for (Obstacle obstacle : obstacles){
+            addObstacle(obstacle);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addObstacle(Obstacle obstacle){
+        obstacles.add(obstacle);
+        ArrayList<Node>[] killedBrokenNodes = new ArrayList[2];
+        ArrayList<Node> killedNodes = killedBrokenNodes[0];
+        ArrayList<Node> brokenNodes = killedBrokenNodes[1];
+        dynamicObstacles.put(obstacle, killedBrokenNodes);
+
+        // for (Node node : nodes.keySet()){
+        //     List<Node> toRemove = new ArrayList<>();
+
+        //     if (obstacle.didCollide(node, node)){
+        //         if (!node.equals(goal) && !node.equals(start)){
+        //             nodes.remove(node);
+        //             drawing.remove(node.getObj());
+        //             dynamicObstacles.get(obstacle)[0].add(node);
+        //         }
+                
+        //         for (Node nodeR : node.visibleNodes){
+        //             nodeR.removeVisibleNode(node);
+        //         }
+        //         continue;
+        //     }
+        //     for (Node visible : node.visibleNodes){
+        //         if (obstacle.didCollide(node, visible)){
+        //             visible.visibleNodes.remove(node);
+        //             toRemove.add(visible);
+        //             node.setParent(null);
+        //             visible.setParent(null);
+        //         }
+        //     }
+        //     node.visibleNodes.removeAll(toRemove);
+        // }
+        // wholeObstacles.add(obstacle);
+        // obstacles.add(obstacle);
+        // drawing.add(obstacle);
+
+        // List<Node> workingNodes = findCornerNodes(obstacle);
+
+        // allNodes.addAll(workingNodes);
+        // for (Node node : workingNodes){
+        //     drawing.add(node.getCircle());
+        //     node.getCircle().setColor(Color.GREEN);
+        //     for (Node potentialVis : allNodes.toList()){
+        //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
+        //             node.addVisibleNode(potentialVis);
+        //             if (!workingNodes.contains(potentialVis)){
+        //                 potentialVis.addVisibleNode(node);
+        //             }
+        //         }
+        //     }
+        // }
+
+        // compute();
     }
 
     @Override
-    public synchronized void removeObstacles(List<Obstacle> obstacles) {
-        // TODO Auto-generated method stub
+    public void removeObstacles(List<Obstacle> obstacles) {
+        for (Obstacle obstacle : obstacles){
+            removeObstacle((Obstacle)obstacle);
+        }
+    }
+
+    private void removeObstacle(Obstacle obstacle){
+
+        // drawing.remove(obstacle);
+        // obstacles.remove(obstacle);
+        // wholeObstacles.remove(obstacle);
+        // allNodes.removeAll(obstacle.childNodes);
+        
+
+        // for (Node node : obstacle.childNodes){
+        //     drawing.remove(node.getObj());
+        //     for (Node nodeR : node.visibleNodes){
+        //         nodeR.removeVisibleNode(node);
+        //     }
+        // }
+
+        // ArrayList<Node> reAdd = new ArrayList<>();
+        // for (Obstacle obstacle2 : obstacles.findKNearest(obstacle, 10)){
+        //     for (Node node : obstacle2.childNodes){
+        //         if (obstacles.search(node.parentObstacle) != null && !collidesObstacle(node, node)){
+        //             reAdd.add(node);
+        //             allNodes.add(node);
+        //         }
+        //     }
+            
+        // }
+
+        // for (Node node : reAdd){
+        //     drawing.add(node.getCircle());
+        //     node.getCircle().setColor(Color.GREEN);
+        //     for (Node potentialVis : allNodes.toList()){
+        //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
+        //             node.addVisibleNode(potentialVis);
+        //             if (!reAdd.contains(potentialVis)){
+        //                 potentialVis.addVisibleNode(node);
+        //             }
+        //         }
+        //     }
+        // }
+
+        // compute();
     }
 
     /**

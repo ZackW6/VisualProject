@@ -124,6 +124,10 @@ public class App {
             rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
         }));
 
+        keyboard.keyPressed("j").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
+        }));
+
         keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
             Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
             rrt.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
