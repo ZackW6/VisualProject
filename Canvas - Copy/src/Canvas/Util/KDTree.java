@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.function.Consumer;
 
-import Canvas.Pathing.RRT.Node;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
 
