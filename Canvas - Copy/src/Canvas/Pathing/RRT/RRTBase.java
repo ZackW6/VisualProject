@@ -247,4 +247,7 @@ public interface RRTBase {
         return finalObstacles;
     }
 
+    public void prune(int max);
+
+    public void delete();
 }

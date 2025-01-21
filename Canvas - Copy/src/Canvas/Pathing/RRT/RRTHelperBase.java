@@ -27,11 +27,13 @@ public abstract class RRTHelperBase implements RRTBase{
 
     private Field field = new Field(0, 0, 1000, 600);
 
-    private double minimumDist = 10;
+    private double minimumDist = 100;
 
     private double maxStepSize = 10;
 
     protected PolyShape drawing;
+
+    protected VisualJ vis;
 
     private double bias = 0;
     
@@ -53,9 +55,11 @@ public abstract class RRTHelperBase implements RRTBase{
         temp.add(goal.getCircle());
         drawing = new PolyShape(0, 0, temp);
         vis.add(drawing);
+        this.vis = vis;
         nodes.add(start);
     }
 
+    @Override
     public void process(){
         for (int i = 0; i < initActions.length; i++){
             initActions[i].run();
@@ -67,6 +71,7 @@ public abstract class RRTHelperBase implements RRTBase{
 
     protected abstract void runAction();
 
+    @Override
     public PolyShape getPath(Node nodePathEnd){
         Node activeNode = new Node(nodePathEnd);
         PolyShape poly = new PolyShape(0, 0);
@@ -107,6 +112,29 @@ public abstract class RRTHelperBase implements RRTBase{
         return new Node(newX, newY, nearest);
     }
 
+    protected List<Node> getNearbyNodes(Node newPoint) {
+        return getNearbyNodes(newPoint, calculateRadius());
+    }
+
+    protected List<Node> getNearbyNodes(Node newPoint, double radius) {
+        return nodes.findInRange(new Node(newPoint.x - radius, newPoint.y - radius), new Node(newPoint.x + radius, newPoint.y + radius));
+    }
+
+    protected List<Node> getNearbyNodes(Node newPoint, List<Node> toLookThrough) {
+        List<Node> nearbyNodes = new ArrayList<>();
+        double radius = calculateRadius();
+        for (Node node : toLookThrough) {
+            if (node.distanceTo(newPoint) < radius) {
+                nearbyNodes.add(node);
+            }
+        }
+        return nearbyNodes;
+    }
+
+    private double calculateRadius() {
+        return 100;
+    }
+
     public void scheduleObstacles(List<Obstacle> obstacles){
         initActions[0] = ()->{setObstacles(obstacles);};
     }
@@ -123,7 +151,7 @@ public abstract class RRTHelperBase implements RRTBase{
      * forces a full reset of all paths, use only for full field changes
      * @param obstacles
      */
-    public synchronized void setObstacles(List<Obstacle> obstacles){
+    public  void setObstacles(List<Obstacle> obstacles){
         nodes.clear(drawing);
 
         nodes.add(this.start);
@@ -132,28 +160,31 @@ public abstract class RRTHelperBase implements RRTBase{
         this.obstacles.clear(drawing);
         this.obstacles.addAll(obstacles);
         drawing.getArray().addAll(obstacles);
-    }
-
-    public synchronized void addObstacles(List<Obstacle> obstacles){
-
-    }
-
-    public synchronized void removeObstacles(List<Obstacle> obstacles){
         
     }
 
-    public synchronized void setStart(Vector2D start){
+    public  void addObstacles(List<Obstacle> obstacles){
+
+    }
+
+    public  void removeObstacles(List<Obstacle> obstacles){
+        
+    }
+
+    public  void setStart(Vector2D start){
 
         nodes.clear(drawing);
 
         this.start.setPosition(start.x, start.y);
 
         nodes.add(this.start);
+        nodes.add(this.goal);
         this.start.getCircle().setColor(Color.ORANGE);
         drawing.add(this.start.getCircle());
+        drawing.add(this.goal.getCircle());
     }
 
-    public synchronized void setGoal(Vector2D goal){
+    public  void setGoal(Vector2D goal){
         
         if (drawing.indexOf(this.goal.getCircle())!=-1){
             drawing.remove(this.goal.getCircle());
@@ -221,4 +252,18 @@ public abstract class RRTHelperBase implements RRTBase{
     }
     
     public record Field(double x, double y, double width, double height){};
+
+    @Override
+    public void delete() {
+        drawing.getArray().clear();
+        obstacles.clear();
+        nodes.clear();
+        start = new Node(0, 0);
+        goal = new Node(1000,600);
+        field = new Field(0, 0, 1000, 600);
+        minimumDist = 10;
+        maxStepSize = 10;
+        bias = 0;
+        vis.remove(drawing);
+    }
 }

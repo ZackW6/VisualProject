@@ -23,6 +23,8 @@ public class PreloadRRT implements RRTBase{
     ModifiedNode start = new ModifiedNode(850,450);
     ModifiedNode goal = new ModifiedNode(850,450);
 
+    VisualJ vis;
+
     Field field;
 
     double bestCost = Double.POSITIVE_INFINITY;
@@ -73,6 +75,8 @@ public class PreloadRRT implements RRTBase{
         for (Obstacle obstacle : obstacles) {
             wholeObstacles.add(new ModifiedObstacle(obstacle));
         }
+
+        this.vis = vis;
         
         ArrayList<ModifiedObstacle> workingObstacles = new ArrayList<>();
         for (ModifiedObstacle obstacle : wholeObstacles){
@@ -110,10 +114,6 @@ public class PreloadRRT implements RRTBase{
         }
 
         compute();
-    }
-
-    public PreloadRRT(VisualJ vis, Field field, List<Obstacle> obstacles, ArrayList<ModifiedNode> solvedNodes) {
-        //TODO something here
     }
 
     public void process(){
@@ -541,4 +541,21 @@ public class PreloadRRT implements RRTBase{
         return (KDTree<Obstacle>) list;
     }
     
+    @Override
+    public void delete() {
+        this.drawing.getArray().clear();
+        allNodes.clear();
+        obstacles.clear();
+        wholeObstacles.clear();
+        bestCost = Double.POSITIVE_INFINITY;
+        start = new ModifiedNode(850,450);
+        goal = new ModifiedNode(850,450);
+        path = null;
+        vis.remove(drawing);
+    }
+
+    @Override
+    public void prune(int max) {
+        
+    }
 }

@@ -1,19 +1,5 @@
-import java.awt.Color;
-import java.awt.Font;
-import java.time.zone.ZoneOffsetTransitionRule.TimeDefinition;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.DoubleSupplier;
-
-import Canvas.Commands.Command;
-import Canvas.Commands.CommandBase;
 import Canvas.Commands.Commands;
-import Canvas.Commands.ConditionalCommand;
-import Canvas.Commands.InstantCommand;
 import Canvas.Commands.TimedCommand;
-import Canvas.Commands.Trigger;
-import Canvas.FileUtil.FileParser;
-import Canvas.FileUtil.FileWriter;
 import Canvas.Inputs.KeyInput;
 import Canvas.Inputs.MouseInput;
 import Canvas.Inputs.MouseInput.MouseInputs;
@@ -21,27 +7,19 @@ import Canvas.Inputs.MouseInput.MouseSide;
 import Canvas.Pathing.RRT.BetterPreloadRRT;
 import Canvas.Pathing.RRT.InformedRRTStar;
 import Canvas.Pathing.RRT.Obstacle;
-import Canvas.Pathing.RRT.PreloadRRT;
 import Canvas.Pathing.RRT.RRT;
-import Canvas.Pathing.RRT.RRTHelperBase;
-import Canvas.Pathing.RRT.RRTStar;
+import Canvas.Pathing.RRT.RRTBase;
+import Canvas.Pathing.RRT.RRTContainer;
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
-import Canvas.Shapes.Circle;
-import Canvas.Shapes.Line;
-import Canvas.Shapes.Obj;
-import Canvas.Shapes.Oval;
-import Canvas.Shapes.PolyShape;
-import Canvas.Shapes.Polygon;
-import Canvas.Shapes.Rectangle;
-import Canvas.Shapes.Square;
+import Canvas.Pathing.RRT.RRTStar;
 import Canvas.Shapes.Text;
 import Canvas.Shapes.VisualJ;
-import Canvas.Shapes.UserButtons.TypeButton;
-import Canvas.Util.ColorEXT;
 import Canvas.Util.Profile;
 import Canvas.Util.Random;
 import Canvas.Util.Vector2D;
-import Canvas.Pathing.RRT.RRTBase;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 class MouseMovingHelper{
     public Vector2D mouseMarkCoords = Vector2D.of(0,0);
@@ -60,34 +38,35 @@ public class App {
     public static Text physicsFR = new Text(100, 140, 15, Color.RED, "");
     public static Text addingText = new Text(200, 200, 100, Color.RED, "");
 
+    public static int state = 0;
+
     
     public static void main(String[] args) {
         
         vis = new VisualJ("Simulation",1700,900,Color.black);
+
         mouse = new MouseInput(vis);
         keyboard = new KeyInput(vis);
         
         vis.startThread();
         
-        CommandBase runner = Commands.timed(()->runAll(vis), 10);
-        runner.schedule();
-        FileParser fileParser = new FileParser("C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
-        List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
+        // FileParser fileParser = new FileParser("C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
+        List<Obstacle> obstacles = new ArrayList<>();//fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
 
-        RRTBase rrt = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), obstacles);
+        RRTBase rrt = new RRT(vis, new Field(0, 0, 1700, 900));
+        RRTContainer rrtContainer = new RRTContainer();
+        rrtContainer.contained = rrt;
+        for (int i = 0; i < 300; i++){
+            double x = Random.randDouble(0, 1700);
+            double y = Random.randDouble(0, 900);
+
+            double width = Random.randDouble(0, 40);
+            double height = Random.randDouble(0, 40);
+            obstacles.add(new Obstacle(x, y, width, height, true));
+        }
+
+        rrtContainer.contained.scheduleObstacles(obstacles);
         
-        
-
-        // for (int i = 0; i < 1000; i++){
-        //     double x = Random.randDouble(0, 1700);
-        //     double y = Random.randDouble(0, 900);
-
-        //     double width = Random.randDouble(0, 40);
-        //     double height = Random.randDouble(0, 40);
-        //     obstacles.add(new Obstacle(x, y, width, height, true));
-        // }
-        // rrt.scheduleObstacles(obstacles);
-
         // rrt.setBias(.3);
         // rrt.setMinimumDistance(200);
         // rrt.setMaxStepDist(10);
@@ -96,45 +75,72 @@ public class App {
         // rrt.scheduleGoal(Vector2D.of(1000,300));
 
 
-        TimedCommand timedCommand = new TimedCommand(()->{rrt.process();}, 0);
-        timedCommand.schedule();
+        TimedCommand timedCommand1 = new TimedCommand(()->{
+            try {
+                rrtContainer.contained.process();
+            } catch (Exception e) {
+                
+            }
+            
+        }, 0);
+        timedCommand1.schedule();
 
-        keyboard.keyPressed("Up").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(0,-5/vis.getZoom());
-        }),10);
-        keyboard.keyPressed("Left").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(5/vis.getZoom(),0);
-        }),10);
-        keyboard.keyPressed("Right").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(-5/vis.getZoom(),0);
-        }),10);
-        keyboard.keyPressed("Down").whileTrue(Commands.runOnce(()->{
-            vis.moveFrame(0,5/vis.getZoom());
-        }),10);
+        // keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
+        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "AvoidStage"));
+        // }));
 
-        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "AvoidStage"));
-        }));
+        // keyboard.keyPressed("k").onTrue(Commands.runOnce(()->{
+        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "navgrid"));
+        // }));
 
-        keyboard.keyPressed("k").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "navgrid"));
-        }));
+        // keyboard.keyPressed("l").onTrue(Commands.runOnce(()->{
+        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
+        // }));
 
-        keyboard.keyPressed("l").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
-        }));
+        // keyboard.keyPressed("j").onTrue(Commands.runOnce(()->{
+        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
+        // }));
 
-        keyboard.keyPressed("j").onTrue(Commands.runOnce(()->{
-            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
-        }));
+        // keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
+        //     Vector2D point = vis1.screenRelativePoint(mouse.getMouseCoords());
+        //     rrt1.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
+        // }));
 
-        keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
-            Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
-            rrt.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
-        }));
+        // keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
+        //     rrt1.removeObstacles(List.of(rrt1.getObstacles().get(0)));
+        // }));
 
-        keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
-            rrt.removeObstacles(List.of(rrt.getObstacles().get(0)));
+        keyboard.keyPressed("Space").onTrue(Commands.runOnce(()->{
+            List<Obstacle> obstacles1 = rrtContainer.contained.getObstacles();
+            Vector2D goal = rrtContainer.contained.getGoal();
+            Vector2D start = rrtContainer.contained.getStart();
+            rrtContainer.contained.delete();
+            state++;
+            switch (state) {
+                case 0:
+                    rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                    break;
+                case 1:
+                    rrtContainer.contained = new RRTStar(vis, new Field(0, 0, 1700, 900));
+                    break;
+                case 2:
+                    rrtContainer.contained = new InformedRRTStar(vis, new Field(0, 0, 1700, 900));
+                    break;
+                case 3:
+                    rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
+                    break;
+                case 4:
+                    state = 0;
+                    rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                    break;
+                default:
+                    rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                    break;
+            }
+
+            rrtContainer.contained.scheduleObstacles(obstacles1);
+            rrtContainer.contained.scheduleStart(start);
+            rrtContainer.contained.scheduleGoal(goal);
         }));
 
         
@@ -173,17 +179,15 @@ public class App {
         mouse.addEvent(()->{
             if (mouseHelperLeft.hasReleased){
                 mouseHelperLeft.mouseMarkCoords = mouse.getMouseCoords();
-                mouseHelperLeft.startMarkCoords = Vector2D.of(rrt.getGoal());
+                mouseHelperLeft.startMarkCoords = Vector2D.of(rrtContainer.contained.getGoal());
                 mouseHelperLeft.hasReleased = false;
                 mouseHelperLeft.startFrameMove = vis.getFrameMove();
             }
-            rrt.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x + (vis.getFrameMove().x - mouseHelperLeft.startFrameMove.x))*1/vis.getZoom()
+            rrtContainer.contained.scheduleGoal(Vector2D.of(mouseHelperLeft.startMarkCoords.x-(mouseHelperLeft.mouseMarkCoords.x-mouse.getMouseCoords().x + (vis.getFrameMove().x - mouseHelperLeft.startFrameMove.x))*1/vis.getZoom()
                 ,mouseHelperLeft.startMarkCoords.y-(mouseHelperLeft.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
             // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
         },MouseInputs.MOUSE_DRAGGED, MouseSide.LEFT);
-        CommandBase mouseInputCommand = new TimedCommand(()->{
-            
-        }, 0);
+
         MouseMovingHelper mouseHelperRight = new MouseMovingHelper();
         mouse.addEvent(()->{
             mouseHelperRight.hasReleased = true;
@@ -192,10 +196,10 @@ public class App {
         mouse.addEvent(()->{
             if (mouseHelperRight.hasReleased){
                 mouseHelperRight.mouseMarkCoords = mouse.getMouseCoords();
-                mouseHelperRight.startMarkCoords = Vector2D.of(rrt.getStart());
+                mouseHelperRight.startMarkCoords = Vector2D.of(rrtContainer.contained.getStart());
                 mouseHelperRight.hasReleased = false;
             }
-            rrt.scheduleStart(Vector2D.of(mouseHelperRight.startMarkCoords.x-(mouseHelperRight.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperRight.startMarkCoords.y-(mouseHelperRight.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
+            rrtContainer.contained.scheduleStart(Vector2D.of(mouseHelperRight.startMarkCoords.x-(mouseHelperRight.mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),mouseHelperRight.startMarkCoords.y-(mouseHelperRight.mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom()));
             // vis.setFrame(startMarkCoords.x-(mouseMarkCoords.x-mouse.getMouseCoords().x)*1/vis.getZoom(),startMarkCoords.y-(mouseMarkCoords.y-mouse.getMouseCoords().y)*1/vis.getZoom());
             // vis.setZoom(mouse.getMouseCoords().y/1000);
         },MouseInputs.MOUSE_DRAGGED, MouseSide.RIGHT);
@@ -213,18 +217,6 @@ public class App {
         defineShapes(vis);
         // mouse.addEvent(()->keyboard.beginGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.LEFT);
         // mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
-    }
-
-    public static void runAll(VisualJ vis){
-        profile.start();
-        ArrayList<Obj> shapes = vis.getObjArray();
-        for (int i=0;i<shapes.size();i++){
-            if (shapes.get(i)!=null){
-                // shapes.get(i).rotate(shapes.get(i).getDegree()+1);
-                // addingText.setText(keyboard.getCurrentGather().get(0));
-            }
-        }
-        profile.stop();
     }
 
     public static void defineShapes(VisualJ vis){

@@ -1,20 +1,14 @@
 package Canvas.Pathing.RRT;
 
-import java.awt.Color;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
 import Canvas.Pathing.RRT.RRTHelperBase.Field;
-import Canvas.Shapes.Line;
 import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
 import Canvas.Util.KDTree;
 import Canvas.Util.Vector2D;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 public class BetterPreloadRRT implements RRTBase{
 
@@ -30,9 +24,10 @@ public class BetterPreloadRRT implements RRTBase{
     Field field;
     PolyShape path = null;
 
-    double bestCost = Double.POSITIVE_INFINITY;
     Node start = new Node(850,450);
     Node goal = new Node(1100,650);
+
+    VisualJ vis;
 
     /**
      * this list of obstacles should only be used for either loaded from a file, or something else, ask zack
@@ -43,8 +38,8 @@ public class BetterPreloadRRT implements RRTBase{
     public BetterPreloadRRT(VisualJ vis, Field field, List<Obstacle> obstacles){
         this.field = field;
         vis.add(drawing);
+        this.vis = vis;
         setObstacles(obstacles);
-        
     }
 
     private void compute() {
@@ -89,17 +84,15 @@ public class BetterPreloadRRT implements RRTBase{
         }
 
         if (!goal.isDescendedOf(start) || collidesObstacle(start,start)){
-            bestCost = Double.POSITIVE_INFINITY;
             return;
         }
 
         path = getPath(goal);
         drawing.add(path);
-        bestCost = goal.getCost();
     }
 
     @Override
-    public synchronized void setStart(Vector2D start) {
+    public  void setStart(Vector2D start) {
         this.start.setPosition(start.x, start.y);
         nodes.get(this.start).clear();
         nodes.forEach((node, visibleNodes)->{
@@ -119,7 +112,7 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     @Override
-    public synchronized void setGoal(Vector2D goal) {
+    public  void setGoal(Vector2D goal) {
         this.goal.setPosition(goal.x, goal.y);
         nodes.get(this.goal).clear();
         this.goal.setParent(null);
@@ -144,7 +137,7 @@ public class BetterPreloadRRT implements RRTBase{
      * in this case it is a complete reset, but it is fast enough that if you are using a grid based obstacle system you should use this
      */
     @Override
-    public synchronized void setObstacles(List<Obstacle> obstacles) {
+    public  void setObstacles(List<Obstacle> obstacles) {
         staticObstacles.clear();
         nodes.clear();
         this.obstacles.clear();
@@ -155,7 +148,7 @@ public class BetterPreloadRRT implements RRTBase{
         staticObstacles = new ArrayList<>(simplifyObstacles(obstacles));
         drawing.getArray().addAll(staticObstacles);
 
-        if (staticObstacles.size() == 0){
+        if (staticObstacles.isEmpty()){
             return;
         }
 
@@ -417,6 +410,24 @@ public class BetterPreloadRRT implements RRTBase{
     @Override
     public double getBias() {
         return 0;
+    }
+
+    @Override
+    public void delete() {
+        this.drawing.getArray().clear();
+        this.nodes.clear();
+        obstacles.clear();
+        dynamicObstacles.clear();
+        staticObstacles.clear();
+        path = null;
+        start = new Node(850,450);
+        goal = new Node(1100,650);
+        vis.remove(drawing);
+    }
+
+    @Override
+    public void prune(int max) {
+        
     }
     
 }
