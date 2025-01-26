@@ -9,13 +9,6 @@
             "name": "App",
             "request": "launch",
             "mainClass": "App",
-            "projectName": "VisualProject_410d1064"
-        },
-        {
-            "type": "java",
-            "name": "App2",
-            "request": "launch",
-            "mainClass": "App2",
             "projectName": "VisualProject_a746e525"
         },
         {

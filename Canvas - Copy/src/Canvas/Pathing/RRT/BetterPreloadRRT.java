@@ -5,6 +5,12 @@ import Canvas.Shapes.PolyShape;
 import Canvas.Shapes.VisualJ;
 import Canvas.Util.KDTree;
 import Canvas.Util.Vector2D;
+
+import java.awt.Color;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,11 +18,15 @@ import java.util.List;
 
 public class BetterPreloadRRT implements RRTBase{
 
+    @Retention(RetentionPolicy.RUNTIME) // Annotation is available at runtime
+    @Target({ElementType.LOCAL_VARIABLE}) // Can be applied to methods and classes
+    public @interface DynamicNode {}
+    
+    KDTree<Obstacle> obstacles = new KDTree<>();
 
     ArrayList<Obstacle> staticObstacles = new ArrayList<>();
-    HashMap<Obstacle, ArrayList<Node>[]> dynamicObstacles = new HashMap<>();
 
-    KDTree<Obstacle> obstacles = new KDTree<>();
+    HashMap<Obstacle, ArrayList<Node>[]> dynamicObstacles = new HashMap<>();
 
     HashMap<Node, ArrayList<Node>> nodes = new HashMap<>();
     
@@ -75,8 +85,6 @@ public class BetterPreloadRRT implements RRTBase{
                     node.setParent(visable);
                 }
             });
-
-                
         }
 
         if (path != null){
@@ -93,6 +101,12 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public  void setStart(Vector2D start) {
+        try {
+            Thread.sleep((long).02);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         this.start.setPosition(start.x, start.y);
         nodes.get(this.start).clear();
         nodes.forEach((node, visibleNodes)->{
@@ -144,6 +158,11 @@ public class BetterPreloadRRT implements RRTBase{
         dynamicObstacles.clear();
         drawing.getArray().clear();
         
+        nodes.put(start, new ArrayList<>());
+
+        nodes.put(goal, new ArrayList<>());
+        goal.setParent(null);
+        
         path = null;
         staticObstacles = new ArrayList<>(simplifyObstacles(obstacles));
         drawing.getArray().addAll(staticObstacles);
@@ -165,11 +184,6 @@ public class BetterPreloadRRT implements RRTBase{
         mixedObstacles.remove(closest);
         this.obstacles.add(closest);
         this.obstacles.addAll(mixedObstacles);
-
-        nodes.put(start, new ArrayList<>());
-
-        nodes.put(goal, new ArrayList<>());
-        goal.setParent(null);
 
         for (Obstacle obstacle : staticObstacles){
             List<Node> workableNodes = findCornerNodes(obstacle);
@@ -219,60 +233,83 @@ public class BetterPreloadRRT implements RRTBase{
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void addObstacle(Obstacle obstacle){
         obstacles.add(obstacle);
-        ArrayList<Node>[] killedBrokenNodes = new ArrayList[2];
+        ArrayList<Node>[] killedBrokenNodes = new ArrayList[3];
+        killedBrokenNodes[0] = new ArrayList<>();
+        killedBrokenNodes[1] = new ArrayList<>();
+        killedBrokenNodes[2] = new ArrayList<>();
         ArrayList<Node> killedNodes = killedBrokenNodes[0];
         ArrayList<Node> brokenNodes = killedBrokenNodes[1];
+        ArrayList<Node> createdNodes = killedBrokenNodes[2];
+
+        drawing.add(obstacle);
+        
+        for (Node node : nodes.keySet()){
+            ArrayList<Node> toRemove = new ArrayList<>();
+            if (obstacle.didCollide(node, node)){
+                if (!node.equals(goal) && !node.equals(start)){
+                    // nodes.remove(node);
+                    drawing.remove(node.getObj());
+                    killedNodes.add(node);
+                }
+                
+                for (Node nodeR : nodes.get(node)){
+                    if (!nodes.containsKey(nodeR)){
+                        continue;
+                    }
+                    nodes.get(nodeR).remove(node);
+                }
+                continue;
+            }
+            for (Node visible : nodes.get(node)){
+                if (nodes.containsKey(visible))
+                if (obstacle.didCollide(node, visible)){
+                    nodes.get(visible).remove(node);
+                    toRemove.add(visible);
+
+                    brokenNodes.add(visible);
+                    
+                    node.setParent(null);
+                    visible.setParent(null);
+                }
+            }
+            nodes.get(node).removeAll(toRemove);
+        }
+
+        for (Node node : killedNodes){
+            if (node.equals(start) || node.equals(goal)){
+                continue;
+            }
+            nodes.remove(node);
+        }
+
         dynamicObstacles.put(obstacle, killedBrokenNodes);
 
-        // for (Node node : nodes.keySet()){
-        //     List<Node> toRemove = new ArrayList<>();
+        List<Node> workingNodes = findCornerNodes(obstacle);
+        createdNodes.addAll(workingNodes);
+        for (Node node : workingNodes){
+            node.setDynamic(true);
+            nodes.put(node, new ArrayList<>());
+            drawing.add(node.getCircle());
+            node.getCircle().setColor(Color.GREEN);
+            for (Node potentialVis : nodes.keySet()){
+                if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
+                    nodes.get(node).add(potentialVis);
+                    if (!workingNodes.contains(potentialVis)){
+                        nodes.get(potentialVis).add(node);
+                    }
+                }
+            }
+        }
 
-        //     if (obstacle.didCollide(node, node)){
-        //         if (!node.equals(goal) && !node.equals(start)){
-        //             nodes.remove(node);
-        //             drawing.remove(node.getObj());
-        //             dynamicObstacles.get(obstacle)[0].add(node);
-        //         }
-                
-        //         for (Node nodeR : node.visibleNodes){
-        //             nodeR.removeVisibleNode(node);
-        //         }
-        //         continue;
-        //     }
-        //     for (Node visible : node.visibleNodes){
-        //         if (obstacle.didCollide(node, visible)){
-        //             visible.visibleNodes.remove(node);
-        //             toRemove.add(visible);
-        //             node.setParent(null);
-        //             visible.setParent(null);
-        //         }
-        //     }
-        //     node.visibleNodes.removeAll(toRemove);
-        // }
-        // wholeObstacles.add(obstacle);
-        // obstacles.add(obstacle);
-        // drawing.add(obstacle);
+        compute();
+    }
 
-        // List<Node> workingNodes = findCornerNodes(obstacle);
-
-        // allNodes.addAll(workingNodes);
-        // for (Node node : workingNodes){
-        //     drawing.add(node.getCircle());
-        //     node.getCircle().setColor(Color.GREEN);
-        //     for (Node potentialVis : allNodes.toList()){
-        //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
-        //             node.addVisibleNode(potentialVis);
-        //             if (!workingNodes.contains(potentialVis)){
-        //                 potentialVis.addVisibleNode(node);
-        //             }
-        //         }
-        //     }
-        // }
-
-        // compute();
+    public void removeLastDynamic(){
+        if (dynamicObstacles.keySet().size() > 0){
+            removeObstacle(dynamicObstacles.keySet().toArray(new Obstacle[0])[0]);
+        }
     }
 
     @Override
@@ -283,45 +320,72 @@ public class BetterPreloadRRT implements RRTBase{
     }
 
     private void removeObstacle(Obstacle obstacle){
+        drawing.remove(obstacle);
+        obstacles.remove(obstacle);
 
-        // drawing.remove(obstacle);
-        // obstacles.remove(obstacle);
-        // wholeObstacles.remove(obstacle);
-        // allNodes.removeAll(obstacle.childNodes);
-        
+        for (Node node : dynamicObstacles.get(obstacle)[2]){
+            drawing.remove(node.getObj());
+            if (!nodes.containsKey(node)){
+                continue;
+            }
+            for (Node nodeR : nodes.get(node)){
+                if (!nodes.containsKey(nodeR)){
+                    continue;
+                }
+                nodes.get(nodeR).remove(node);
+            }
+        }
 
-        // for (Node node : obstacle.childNodes){
-        //     drawing.remove(node.getObj());
-        //     for (Node nodeR : node.visibleNodes){
-        //         nodeR.removeVisibleNode(node);
-        //     }
-        // }
+        for (Node node : dynamicObstacles.get(obstacle)[2]){
+            nodes.remove(node);
+        }
 
         // ArrayList<Node> reAdd = new ArrayList<>();
-        // for (Obstacle obstacle2 : obstacles.findKNearest(obstacle, 10)){
-        //     for (Node node : obstacle2.childNodes){
-        //         if (obstacles.search(node.parentObstacle) != null && !collidesObstacle(node, node)){
-        //             reAdd.add(node);
-        //             allNodes.add(node);
-        //         }
+        // for (Node node : dynamicObstacles.get(obstacle)[0]){
+        //     if (!collidesObstacle(node, node)){
+        //         reAdd.add(node);
         //     }
-            
         // }
 
+        // ArrayList<Node> deAdd = new ArrayList<>();
         // for (Node node : reAdd){
-        //     drawing.add(node.getCircle());
-        //     node.getCircle().setColor(Color.GREEN);
-        //     for (Node potentialVis : allNodes.toList()){
-        //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
-        //             node.addVisibleNode(potentialVis);
-        //             if (!reAdd.contains(potentialVis)){
-        //                 potentialVis.addVisibleNode(node);
+        //     if (node.isDynamic()){
+        //         boolean keep = false;
+        //         for (Obstacle v : dynamicObstacles.keySet()){
+        //             if (dynamicObstacles.get(v)[2].contains(node)){
+        //                 keep = true;
         //             }
         //         }
+        //         if (!keep){
+        //             deAdd.add(node);
+        //         }else{
+        //             drawing.add(node.getCircle());
+        //             nodes.put(node, new ArrayList<>());
+        //         }
+        //         continue;
+        //     }
+
+        //     drawing.add(node.getCircle());
+        //     nodes.put(node, new ArrayList<>());
+        // }
+
+        // reAdd.removeAll(deAdd);
+
+        // for (Node node : dynamicObstacles.get(obstacle)[1]){
+        //     ArrayList<Node> visible = new ArrayList<>();
+        //     for (Node potentialVis : nodes.keySet()){
+        //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
+        //             visible.add(potentialVis);
+        //         }
+        //     }
+        //     if (nodes.containsKey(node)){
+        //         nodes.get(node).clear();
+        //         nodes.get(node).addAll(visible);
         //     }
         // }
 
-        // compute();
+        dynamicObstacles.remove(obstacle);
+        compute();
     }
 
     /**
@@ -358,9 +422,12 @@ public class BetterPreloadRRT implements RRTBase{
         return this.field;
     }
 
+    /**
+     * in this case only static obstacles
+     */
     @Override
     public List<Obstacle> getObstacles() {
-        return obstacles.toList();
+        return staticObstacles;
     }
 
     @Override
@@ -416,8 +483,6 @@ public class BetterPreloadRRT implements RRTBase{
     public void delete() {
         this.drawing.getArray().clear();
         this.nodes.clear();
-        obstacles.clear();
-        dynamicObstacles.clear();
         staticObstacles.clear();
         path = null;
         start = new Node(850,450);
@@ -425,6 +490,9 @@ public class BetterPreloadRRT implements RRTBase{
         vis.remove(drawing);
     }
 
+    /**
+     * unused
+     */
     @Override
     public void prune(int max) {
         

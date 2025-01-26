@@ -165,7 +165,12 @@ public interface RRTBase {
         }
         ArrayList<ArrayList<Obstacle>> obstacleFiles = new ArrayList<>();
         obstacleFiles.add(new ArrayList<>());
+        double onlyHeight = obstacles.get(0).getHeight();
+        double onlyWidth = obstacles.get(0).getWidth();
         for (Obstacle obstacle : obstacles){
+            if (onlyWidth != obstacle.getWidth() || onlyHeight != obstacle.getHeight()){
+                return obstacles;
+            }
             if (!obstacle.isObstacle()){
                 continue;
             }

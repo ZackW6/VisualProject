@@ -76,7 +76,7 @@ public abstract class RRTHelperBase implements RRTBase{
         Node activeNode = new Node(nodePathEnd);
         PolyShape poly = new PolyShape(0, 0);
         int i = 0;
-        while(activeNode.getParent() != null && i <100){
+        while(activeNode.getParent() != null && i <1000){
             poly.add(
                 new Line(activeNode.x + Math.min(activeNode.getParent().x-activeNode.x,0), activeNode.y + Math.min(activeNode.getParent().y-activeNode.y,0)
                 , List.of(Vector2D.of(0,0)

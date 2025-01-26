@@ -15,6 +15,8 @@ public class Node extends Vector2D implements DrawingAccessable{
     protected double cost = Double.POSITIVE_INFINITY;
     private Node parent = null;
 
+    private boolean isDynamic = false;
+
     private Circle circle = new Circle(0, 0, 5, Color.BLUE, true);
 
     public Node(double x, double y, Node parent) {
@@ -93,6 +95,14 @@ public class Node extends Vector2D implements DrawingAccessable{
     @Override
     public Obj getObj() {
         return getCircle();
+    }
+
+    public void setDynamic(boolean dynamic){
+        this.isDynamic = dynamic;
+    }
+
+    public boolean isDynamic(){
+        return isDynamic;
     }
 
     /**

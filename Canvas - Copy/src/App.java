@@ -1,5 +1,6 @@
 import Canvas.Commands.Commands;
 import Canvas.Commands.TimedCommand;
+import Canvas.FileUtil.FileParser;
 import Canvas.Inputs.KeyInput;
 import Canvas.Inputs.MouseInput;
 import Canvas.Inputs.MouseInput.MouseInputs;
@@ -50,20 +51,20 @@ public class App {
         
         vis.startThread();
         
-        // FileParser fileParser = new FileParser("C:/1561Examples/2024-MainRobot/src/main/deploy/pathplanner");
-        List<Obstacle> obstacles = new ArrayList<>();//fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
+        FileParser fileParser = new FileParser("Canvas - Copy/src/Canvas/FileUtil/");
+        List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
 
         RRTBase rrt = new RRT(vis, new Field(0, 0, 1700, 900));
         RRTContainer rrtContainer = new RRTContainer();
         rrtContainer.contained = rrt;
-        for (int i = 0; i < 300; i++){
-            double x = Random.randDouble(0, 1700);
-            double y = Random.randDouble(0, 900);
+        // for (int i = 0; i < 300; i++){
+        //     double x = Random.randDouble(0, 1700);
+        //     double y = Random.randDouble(0, 900);
 
-            double width = Random.randDouble(0, 40);
-            double height = Random.randDouble(0, 40);
-            obstacles.add(new Obstacle(x, y, width, height, true));
-        }
+        //     double width = Random.randDouble(0, 40);
+        //     double height = Random.randDouble(0, 40);
+        //     obstacles.add(new Obstacle(x, y, width, height, true));
+        // }
 
         rrtContainer.contained.scheduleObstacles(obstacles);
         
@@ -101,14 +102,25 @@ public class App {
         //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
         // }));
 
-        // keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
-        //     Vector2D point = vis1.screenRelativePoint(mouse.getMouseCoords());
-        //     rrt1.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
-        // }));
+        keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
+            Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
+            rrtContainer.contained.addObstacles(List.of(new Obstacle(point.x, point.y, 30 ,30, true)));
+        }));
 
-        // keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
-        //     rrt1.removeObstacles(List.of(rrt1.getObstacles().get(0)));
-        // }));
+        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
+            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "AvoidStage"));
+        }));
+
+        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
+            rrtContainer.contained.scheduleObstacles(fileParser.loadSquares(rrtContainer.contained, "SmallGridSizes"));
+        }));
+
+        keyboard.keyPressed("s").onTrue(Commands.runOnce(()->{
+            if (rrtContainer.contained instanceof BetterPreloadRRT){
+                ((BetterPreloadRRT)rrtContainer.contained).removeLastDynamic();
+            }
+            // rrtContainer.contained.removeObstacles(List.of(rrtContainer.contained.getObstacles().get(0)));
+        }));
 
         keyboard.keyPressed("Space").onTrue(Commands.runOnce(()->{
             List<Obstacle> obstacles1 = rrtContainer.contained.getObstacles();
@@ -129,12 +141,12 @@ public class App {
                 case 3:
                     rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
                     break;
-                case 4:
-                    state = 0;
-                    rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
-                    break;
+                // case 4:
+                //     state = 4;
+                //     rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                //     break;
                 default:
-                    rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                    rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
                     break;
             }
 
