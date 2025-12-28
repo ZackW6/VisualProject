@@ -16,13 +16,6 @@
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"
-        },
-        {
-            "type": "java",
-            "name": "App",
-            "request": "launch",
-            "mainClass": "App",
-            "projectName": "VisualProject_a746e525"
         }
     ]
 }

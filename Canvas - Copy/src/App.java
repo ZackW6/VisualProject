@@ -39,6 +39,8 @@ public class App {
     public static Text physicsFR = new Text(100, 140, 15, Color.RED, "");
     public static Text addingText = new Text(200, 200, 100, Color.RED, "");
 
+    public static RRTContainer rrtContainer = new RRTContainer();
+
     public static int state = 0;
 
     
@@ -55,7 +57,6 @@ public class App {
         List<Obstacle> obstacles = fileParser.loadSquares(new RRT(vis, new Field(0, 0, 1700, 900)), "navgrid");
 
         RRTBase rrt = new RRT(vis, new Field(0, 0, 1700, 900));
-        RRTContainer rrtContainer = new RRTContainer();
         rrtContainer.contained = rrt;
         // for (int i = 0; i < 300; i++){
         //     double x = Random.randDouble(0, 1700);
@@ -86,21 +87,21 @@ public class App {
         }, 0);
         timedCommand1.schedule();
 
-        // keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
-        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "AvoidStage"));
-        // }));
+        keyboard.keyPressed("i").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "AvoidStage"));
+        }));
 
-        // keyboard.keyPressed("k").onTrue(Commands.runOnce(()->{
-        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "navgrid"));
-        // }));
+        keyboard.keyPressed("k").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "navgrid"));
+        }));
 
-        // keyboard.keyPressed("l").onTrue(Commands.runOnce(()->{
-        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
-        // }));
+        keyboard.keyPressed("l").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "note3Correct"));
+        }));
 
-        // keyboard.keyPressed("j").onTrue(Commands.runOnce(()->{
-        //     rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
-        // }));
+        keyboard.keyPressed("j").onTrue(Commands.runOnce(()->{
+            rrt.scheduleObstacles(fileParser.loadSquares(rrt, "SmallGridSizes"));
+        }));
 
         keyboard.keyPressed("a").onTrue(Commands.runOnce(()->{
             Vector2D point = vis.screenRelativePoint(mouse.getMouseCoords());
@@ -123,36 +124,12 @@ public class App {
         }));
 
         keyboard.keyPressed("Space").onTrue(Commands.runOnce(()->{
-            List<Obstacle> obstacles1 = rrtContainer.contained.getObstacles();
-            Vector2D goal = rrtContainer.contained.getGoal();
-            Vector2D start = rrtContainer.contained.getStart();
-            rrtContainer.contained.delete();
             state++;
-            switch (state) {
-                case 0:
-                    rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
-                    break;
-                case 1:
-                    rrtContainer.contained = new RRTStar(vis, new Field(0, 0, 1700, 900));
-                    break;
-                case 2:
-                    rrtContainer.contained = new InformedRRTStar(vis, new Field(0, 0, 1700, 900));
-                    break;
-                case 3:
-                    rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
-                    break;
-                // case 4:
-                //     state = 4;
-                //     rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
-                //     break;
-                default:
-                    rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
-                    break;
-            }
-
-            rrtContainer.contained.scheduleObstacles(obstacles1);
-            rrtContainer.contained.scheduleStart(start);
-            rrtContainer.contained.scheduleGoal(goal);
+            acknowledgeState();
+        }));
+        keyboard.keyPressed("r").onTrue(Commands.runOnce(()->{
+            state--;
+            acknowledgeState();
         }));
 
         
@@ -229,6 +206,38 @@ public class App {
         defineShapes(vis);
         // mouse.addEvent(()->keyboard.beginGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.LEFT);
         // mouse.addEvent(()->keyboard.endGatherAll(),MouseInputs.MOUSE_CLICKED,MouseSide.RIGHT);
+    }
+
+    public static void acknowledgeState(){
+        List<Obstacle> obstacles1 = rrtContainer.contained.getObstacles();
+        Vector2D goal = rrtContainer.contained.getGoal();
+        Vector2D start = rrtContainer.contained.getStart();
+        rrtContainer.contained.delete();
+        switch (state) {
+            case 0:
+                rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                break;
+            case 1:
+                rrtContainer.contained = new RRTStar(vis, new Field(0, 0, 1700, 900));
+                break;
+            case 2:
+                rrtContainer.contained = new InformedRRTStar(vis, new Field(0, 0, 1700, 900));
+                break;
+            case 3:
+                rrtContainer.contained = new BetterPreloadRRT(vis, new Field(0, 0, 1700, 900), new ArrayList<>());
+                break;
+            case 4:
+                state = 0;
+                rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                break;
+            default:
+                rrtContainer.contained = new RRT(vis, new Field(0, 0, 1700, 900));
+                break;
+        }
+        
+        rrtContainer.contained.scheduleObstacles(obstacles1);
+        rrtContainer.contained.scheduleStart(start);
+        rrtContainer.contained.scheduleGoal(goal);
     }
 
     public static void defineShapes(VisualJ vis){

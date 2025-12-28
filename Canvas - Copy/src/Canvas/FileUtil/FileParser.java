@@ -12,7 +12,6 @@ public class FileParser {
 
     private final String path;
 
-    private String currentFile;
     /**
      * give the file path to the containing folder, not the whole file
      * @param path
@@ -23,8 +22,6 @@ public class FileParser {
     }
 
     public List<Obstacle> loadSquares(RRTBase rrt, String fileName){
-
-        currentFile = fileName;
 
         FileWriter fileWriter = new FileWriter(path);
 

@@ -7,10 +7,6 @@ import Canvas.Util.KDTree;
 import Canvas.Util.Vector2D;
 
 import java.awt.Color;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,15 +14,15 @@ import java.util.List;
 
 public class BetterPreloadRRT implements RRTBase{
 
-    @Retention(RetentionPolicy.RUNTIME) // Annotation is available at runtime
-    @Target({ElementType.LOCAL_VARIABLE}) // Can be applied to methods and classes
-    public @interface DynamicNode {}
     
     KDTree<Obstacle> obstacles = new KDTree<>();
 
     ArrayList<Obstacle> staticObstacles = new ArrayList<>();
 
-    HashMap<Obstacle, ArrayList<Node>[]> dynamicObstacles = new HashMap<>();
+    HashMap<Obstacle, ArrayList<Node>> dynamicObstacles = new HashMap<>();
+
+    ArrayList<Node> killedNodes = new ArrayList<>();
+    ArrayList<Node> brokenNodes = new ArrayList<>();
 
     HashMap<Node, ArrayList<Node>> nodes = new HashMap<>();
     
@@ -208,7 +204,7 @@ public class BetterPreloadRRT implements RRTBase{
 
     @Override
     public void process() {
-        // TODO Auto-generated method stub
+        System.out.println(killedNodes.size());
     }
 
     @Override
@@ -235,13 +231,8 @@ public class BetterPreloadRRT implements RRTBase{
 
     private void addObstacle(Obstacle obstacle){
         obstacles.add(obstacle);
-        ArrayList<Node>[] killedBrokenNodes = new ArrayList[3];
-        killedBrokenNodes[0] = new ArrayList<>();
-        killedBrokenNodes[1] = new ArrayList<>();
-        killedBrokenNodes[2] = new ArrayList<>();
-        ArrayList<Node> killedNodes = killedBrokenNodes[0];
-        ArrayList<Node> brokenNodes = killedBrokenNodes[1];
-        ArrayList<Node> createdNodes = killedBrokenNodes[2];
+        ArrayList<Node> nodesToKill = new ArrayList<>();
+        ArrayList<Node> createdNodes = new ArrayList<>();
 
         drawing.add(obstacle);
         
@@ -251,7 +242,7 @@ public class BetterPreloadRRT implements RRTBase{
                 if (!node.equals(goal) && !node.equals(start)){
                     // nodes.remove(node);
                     drawing.remove(node.getObj());
-                    killedNodes.add(node);
+                    nodesToKill.add(node);
                 }
                 
                 for (Node nodeR : nodes.get(node)){
@@ -263,8 +254,7 @@ public class BetterPreloadRRT implements RRTBase{
                 continue;
             }
             for (Node visible : nodes.get(node)){
-                if (nodes.containsKey(visible))
-                if (obstacle.didCollide(node, visible)){
+                if (nodes.containsKey(visible) && obstacle.didCollide(node, visible)){
                     nodes.get(visible).remove(node);
                     toRemove.add(visible);
 
@@ -277,22 +267,19 @@ public class BetterPreloadRRT implements RRTBase{
             nodes.get(node).removeAll(toRemove);
         }
 
-        for (Node node : killedNodes){
-            if (node.equals(start) || node.equals(goal)){
-                continue;
-            }
-            nodes.remove(node);
+        killedNodes.addAll(nodesToKill);
+        for (int i = 0; i < nodesToKill.size(); i++){
+            nodes.remove(nodesToKill.get(i));
         }
 
-        dynamicObstacles.put(obstacle, killedBrokenNodes);
+        dynamicObstacles.put(obstacle, createdNodes);
 
-        List<Node> workingNodes = findCornerNodes(obstacle);
+        List<Node> workingNodes = findCornerNodesDynamic(obstacle);
         createdNodes.addAll(workingNodes);
         for (Node node : workingNodes){
             node.setDynamic(true);
             nodes.put(node, new ArrayList<>());
             drawing.add(node.getCircle());
-            node.getCircle().setColor(Color.GREEN);
             for (Node potentialVis : nodes.keySet()){
                 if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
                     nodes.get(node).add(potentialVis);
@@ -304,6 +291,44 @@ public class BetterPreloadRRT implements RRTBase{
         }
 
         compute();
+    }
+
+    public List<Node> findCornerNodesDynamic(Obstacle obstacle){
+        Vector2D corner1 = obstacle.getCoords();
+        Vector2D corner2 = new Vector2D(corner1.x + obstacle.getWidth(), corner1.y);
+        Vector2D corner3 = new Vector2D(corner1.x, corner1.y + obstacle.getHeight());
+        Vector2D corner4 = new Vector2D(corner1.x + obstacle.getWidth(), corner1.y + obstacle.getHeight());
+        ArrayList<Node> workingNodes = new ArrayList<>();
+
+        Node node1 = new Node(corner1.add(Vector2D.of(-.001,-.001)));
+        node1.getCircle().setColor(Color.GREEN);
+        if (!collidesObstacle(new Node(corner1.add(Vector2D.of(-.001,-.001))), new Node(corner1.add(Vector2D.of(-.001,-.001))))){
+            workingNodes.add(node1);
+        }else{
+            killedNodes.add(node1);
+        }
+        Node node2 = new Node(corner2.add(Vector2D.of(.001,-.001)));
+        node2.getCircle().setColor(Color.GREEN);
+        if (!collidesObstacle(new Node(corner2.add(Vector2D.of(.001,-.001))), new Node(corner2.add(Vector2D.of(.001,-.001))))){
+            workingNodes.add(node2);
+        }else{
+            killedNodes.add(node2);
+        }
+        Node node3 = new Node(corner3.add(Vector2D.of(-.001,.001)));
+        node3.getCircle().setColor(Color.GREEN);
+        if (!collidesObstacle(new Node(corner3.add(Vector2D.of(-.001,.001))), new Node(corner3.add(Vector2D.of(-.001,.001))))){
+            workingNodes.add(node3);
+        }else{
+            killedNodes.add(node3);
+        }
+        Node node4 = new Node(corner4.add(Vector2D.of(.001,.001)));
+        node4.getCircle().setColor(Color.GREEN);
+        if (!collidesObstacle(new Node(corner4.add(Vector2D.of(.001,.001))), new Node(corner4.add(Vector2D.of(.001,.001))))){
+            workingNodes.add(node4);
+        }else{
+            killedNodes.add(node4);
+        }
+        return workingNodes;
     }
 
     public void removeLastDynamic(){
@@ -323,66 +348,55 @@ public class BetterPreloadRRT implements RRTBase{
         drawing.remove(obstacle);
         obstacles.remove(obstacle);
 
-        for (Node node : dynamicObstacles.get(obstacle)[2]){
+        //Delete all references to the created nodes by this obstacle
+        for (Node node : dynamicObstacles.get(obstacle)){
             drawing.remove(node.getObj());
-            if (!nodes.containsKey(node)){
-                continue;
-            }
-            for (Node nodeR : nodes.get(node)){
-                if (!nodes.containsKey(nodeR)){
-                    continue;
-                }
-                nodes.get(nodeR).remove(node);
-            }
+            nodes.remove(node);
+            
+            nodes.forEach((key, data)->{
+                data.remove(node);
+            });
         }
+        killedNodes.removeAll(dynamicObstacles.get(obstacle));
+        //Delete the references from other obstacles too
+        dynamicObstacles.forEach((obst, deleted)->{
+            brokenNodes.removeAll(dynamicObstacles.get(obstacle));
+        });
 
-        for (Node node : dynamicObstacles.get(obstacle)[2]){
+        for (Node node : dynamicObstacles.get(obstacle)){
             nodes.remove(node);
         }
 
-        // ArrayList<Node> reAdd = new ArrayList<>();
-        // for (Node node : dynamicObstacles.get(obstacle)[0]){
-        //     if (!collidesObstacle(node, node)){
-        //         reAdd.add(node);
-        //     }
-        // }
+        //Now add back all of the deleted nodes, or try to, with connections
+        ArrayList<Node> toRemove = new ArrayList<>();
+        for (Node node : killedNodes){
+            System.out.println("AHHH");
+            if (!collidesObstacle(node, node)){
+                ArrayList<Node> visibleNodes = new ArrayList<>();
+                nodes.put(node, visibleNodes);
+                toRemove.add(node);
+                drawing.add(node.getCircle());
+                nodes.forEach((visible, dontCare) ->{
+                    if (!node.equals(visible) && !collidesObstacle(node, visible)){
+                        visibleNodes.add(visible);
+                    }
+                });
+            }
+        }
+        killedNodes.removeAll(toRemove);
 
-        // ArrayList<Node> deAdd = new ArrayList<>();
-        // for (Node node : reAdd){
-        //     if (node.isDynamic()){
-        //         boolean keep = false;
-        //         for (Obstacle v : dynamicObstacles.keySet()){
-        //             if (dynamicObstacles.get(v)[2].contains(node)){
-        //                 keep = true;
-        //             }
-        //         }
-        //         if (!keep){
-        //             deAdd.add(node);
-        //         }else{
-        //             drawing.add(node.getCircle());
-        //             nodes.put(node, new ArrayList<>());
-        //         }
-        //         continue;
-        //     }
-
-        //     drawing.add(node.getCircle());
-        //     nodes.put(node, new ArrayList<>());
-        // }
-
-        // reAdd.removeAll(deAdd);
-
-        // for (Node node : dynamicObstacles.get(obstacle)[1]){
-        //     ArrayList<Node> visible = new ArrayList<>();
-        //     for (Node potentialVis : nodes.keySet()){
-        //         if (!node.equals(potentialVis) && !collidesObstacle(node, potentialVis)){
-        //             visible.add(potentialVis);
-        //         }
-        //     }
-        //     if (nodes.containsKey(node)){
-        //         nodes.get(node).clear();
-        //         nodes.get(node).addAll(visible);
-        //     }
-        // }
+        //Now check back with all the ones that you destroyed the connections of, and if they are still alive, try and reconnect them
+        for (Node node : brokenNodes){
+            if (nodes.containsKey(node)){
+                ArrayList<Node> visibleNodes = new ArrayList<>();
+                nodes.put(node, visibleNodes);
+                nodes.forEach((visible, dontCare) ->{
+                    if (!node.equals(visible) && !collidesObstacle(node, visible)){
+                        visibleNodes.add(visible);
+                    }
+                });
+            }
+        }
 
         dynamicObstacles.remove(obstacle);
         compute();
@@ -427,7 +441,7 @@ public class BetterPreloadRRT implements RRTBase{
      */
     @Override
     public List<Obstacle> getObstacles() {
-        return staticObstacles;
+        return List.copyOf(staticObstacles);
     }
 
     @Override
